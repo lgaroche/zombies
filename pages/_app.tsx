@@ -10,6 +10,10 @@ import "@fontsource/roboto/300.css"
 import "@fontsource/roboto/400.css"
 import "@fontsource/roboto/500.css"
 import "@fontsource/roboto/700.css"
+import NavBar from "../components/NavBar"
+import Container from "@mui/material/Container"
+import { WalletProvider } from "../components/WalletProvider"
+import { TzombiesProvider } from "../components/TzombiesProvider"
 
 export default function App({ Component, pageProps }: AppProps) {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)")
@@ -27,7 +31,14 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Component {...pageProps} />
+      <WalletProvider>
+        <TzombiesProvider>
+          <NavBar />
+          <Container sx={{ mt: 12 }}>
+            <Component {...pageProps} />
+          </Container>
+        </TzombiesProvider>
+      </WalletProvider>
     </ThemeProvider>
   )
 }
