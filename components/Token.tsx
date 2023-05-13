@@ -24,21 +24,27 @@ const images = [
   "https://openai-labs-public-images-prod.azureedge.net/user-CahPgAlHwKFnBxFuXmjpkw22/generations/generation-SsCT87aCFDaX6jADsUThlicN/image.webp",
 ]
 
-const Token = ({ id, mode, extra, onClick }: TokenProps) => {
-  const Content = () => (
-    <>
-      <CardMedia component="img" height="200" image={images[id % 2]} />
-      <CardContent>
-        Tzombie&nbsp;
-        {!!id && <span>#{id}</span>}
-        {extra}
-      </CardContent>
-    </>
-  )
+const TokenContent = ({
+  id,
+  extra,
+}: {
+  id: number
+  extra?: React.ReactNode
+}) => (
+  <>
+    <CardMedia component="img" height="200" image={images[id % 2]} />
+    <CardContent>
+      Tzombie&nbsp;
+      {<span>#{id}</span>}
+      {extra}
+    </CardContent>
+  </>
+)
 
+const Token = ({ id, mode, extra, onClick }: TokenProps) => {
   return (
     <Card sx={{ maxWidth: 200 }}>
-      <Content />
+      <TokenContent id={id} extra={extra} />
 
       <CardActions>
         {mode === CardMode.Claim && <Button onClick={onClick}>Claim</Button>}
