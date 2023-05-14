@@ -140,7 +140,7 @@
   resolved "https://registry.yarnpkg.com/@completium/archetype/-/archetype-0.4.12.tgz#38fd23db5029c07e3c6c276c04c868022dff1c5d"
   integrity sha512-qBEp+9Eq6hNE3eDAGjrhtHo63NNlso7tutDAzm2X8fdpQgIUzs1fNc73aOwbvS6w5O3CzJZM3MAGuHYnlYWrCA==
 
-"@completium/completium-cli@^0.4.77":
+"@completium/completium-cli@0.4.77":
   version "0.4.77"
   resolved "https://registry.yarnpkg.com/@completium/completium-cli/-/completium-cli-0.4.77.tgz#45d0f2da32c1496f6914afbef8091ba9c1f4659f"
   integrity sha512-dMvp0vXMyUsARglHPx43lT9LXhnKQ5FDMiA/IGxZxVKdIwGj3xVxDqh+zn1ZuVz7WwFpRduK5IKJGrhNWNCbCw==
@@ -710,7 +710,7 @@
   resolved "https://registry.yarnpkg.com/@taquito/axios-fetch-adapter/-/axios-fetch-adapter-0.3.1.tgz#08c4af44a26e5a18475ee15d8d46b1576f5992cd"
   integrity sha512-emPSsrYQumiUcZsDcTAP68gLJpKoJmbzwyy2D2h2/Zm3Q1TbAJJS1kbnwvQZfq0FjYyYCWYSITtAS3w0EUAG4g==
 
-"@taquito/beacon-wallet@~16.0.1":
+"@taquito/beacon-wallet@16.0.1":
   version "16.0.1"
   resolved "https://registry.yarnpkg.com/@taquito/beacon-wallet/-/beacon-wallet-16.0.1.tgz#1c81226c6071a015cda8874c85ec92eb439c6efc"
   integrity sha512-fL2SqQ+rEAYyk+kSH6ff/xikkwMbYGWTL9FmlWEw5WebF6kxlN6iKSxLZrtYvyoT9WKE9PLw+u7miLF0MBLePA==
@@ -872,6 +872,20 @@
     pbkdf2 "^3.1.2"
     typedarray-to-buffer "^4.0.0"
 
+"@taquito/taquito@16.0.1", "@taquito/taquito@~16.0.0":
+  version "16.0.1"
+  resolved "https://registry.yarnpkg.com/@taquito/taquito/-/taquito-16.0.1.tgz#3d4aab083ea3e0201e0b82817b724c06d5047270"
+  integrity sha512-fnOvnFJf45xiLXXAQxmzDpaamCWMI5uqT+R7rtUdo8m8bqii76rIINDKRmBG2KAoMNqkVUkGdOrLcGlvWjaCwA==
+  dependencies:
+    "@taquito/http-utils" "^16.0.1"
+    "@taquito/local-forging" "^16.0.1"
+    "@taquito/michel-codec" "^16.0.1"
+    "@taquito/michelson-encoder" "^16.0.1"
+    "@taquito/rpc" "^16.0.1"
+    "@taquito/utils" "^16.0.1"
+    bignumber.js "^9.1.0"
+    rxjs "^6.6.3"
+
 "@taquito/taquito@^15.0.0", "@taquito/taquito@^15.1.0":
   version "15.1.0"
   resolved "https://registry.yarnpkg.com/@taquito/taquito/-/taquito-15.1.0.tgz#9a3340a8bcaa8bd6e9567776cea1c1659aafe5e9"
@@ -897,20 +911,6 @@
     "@taquito/michelson-encoder" "^16.1.2"
     "@taquito/rpc" "^16.1.2"
     "@taquito/utils" "^16.1.2"
-    bignumber.js "^9.1.0"
-    rxjs "^6.6.3"
-
-"@taquito/taquito@~16.0.0", "@taquito/taquito@~16.0.1":
-  version "16.0.1"
-  resolved "https://registry.yarnpkg.com/@taquito/taquito/-/taquito-16.0.1.tgz#3d4aab083ea3e0201e0b82817b724c06d5047270"
-  integrity sha512-fnOvnFJf45xiLXXAQxmzDpaamCWMI5uqT+R7rtUdo8m8bqii76rIINDKRmBG2KAoMNqkVUkGdOrLcGlvWjaCwA==
-  dependencies:
-    "@taquito/http-utils" "^16.0.1"
-    "@taquito/local-forging" "^16.0.1"
-    "@taquito/michel-codec" "^16.0.1"
-    "@taquito/michelson-encoder" "^16.0.1"
-    "@taquito/rpc" "^16.0.1"
-    "@taquito/utils" "^16.0.1"
     bignumber.js "^9.1.0"
     rxjs "^6.6.3"
 

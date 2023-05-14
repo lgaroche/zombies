@@ -1,0 +1,70 @@
+archetype zombie_market
+
+record transfer_destination {
+  to_dest           : address;
+  token_id_dest     : nat;
+  token_amount_dest : nat
+} as ((%to_, (token_id, amount)))
+
+record transfer_param {
+  tp_from : address;
+  tp_txs  : list<transfer_destination>;
+} as ((%from_, %txs))
+
+asset order {
+    id: nat;
+    seller: address;
+    token_id: nat;
+    amount: nat;
+    price: tez;
+}
+
+variable next_order_id: nat = 1
+
+entry create_sale(token_id_: nat, amount_: nat, price_: tez) {
+    require {
+        r1: amount_ > 0;
+    }
+
+    effect {
+        order.add({
+            id = next_order_id;
+            seller = caller;
+            token_id = token_id_;
+            amount = amount_;
+            price = price_
+        });
+        next_order_id += 1;
+    }
+    
+}
+
+entry buy(order_id: nat, amount_: nat) {
+    require {
+        r2: amount_ > 0;
+        r3: order.contains(order_id) and order[order_id].amount >= amount_;
+        r4: transferred = amount_ * order[order_id].price;
+    }
+    effect {
+        order.update(order_id, {
+            amount -= amount_
+        });
+
+        // transfer the tokens
+        const tx: transfer_destination = {
+            to_dest = caller;
+            token_id_dest = order[order_id].token_id;
+            token_amount_dest = amount_
+        };
+        transfer 0tz to KT1SbumVDPUJ6mcteunLmtv8Ktg82YExVGvz call %transfer<list<transfer_param>>([{
+            tp_from = order[order_id].seller; 
+            tp_txs = [tx]
+        }]);
+
+        // transfer the tez
+        transfer transferred to order[order_id].seller
+    }
+}
+
+
+

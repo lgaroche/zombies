@@ -1,5 +1,35 @@
 import * as ex from "@completium/dapp-ts";
 import * as att from "@completium/archetype-ts-types";
+export enum update_op_types {
+    add_operator = "add_operator",
+    remove_operator = "remove_operator"
+}
+export abstract class update_op extends att.Enum<update_op_types> {
+    abstract to_mich(): att.Micheline;
+    equals(v: update_op): boolean {
+        return att.micheline_equals(this.to_mich(), v.to_mich());
+    }
+}
+export class add_operator extends update_op {
+    constructor(private content: operator_param) {
+        super(update_op_types.add_operator);
+    }
+    to_mich() { return att.left_to_mich(this.content.to_mich()); }
+    toString(): string {
+        return JSON.stringify(this, null, 2);
+    }
+    get() { return this.content; }
+}
+export class remove_operator extends update_op {
+    constructor(private content: operator_param) {
+        super(update_op_types.remove_operator);
+    }
+    to_mich() { return att.right_to_mich(this.content.to_mich()); }
+    toString(): string {
+        return JSON.stringify(this, null, 2);
+    }
+    get() { return this.content; }
+}
 export enum update_for_all_op_types {
     add_for_all = "add_for_all",
     remove_for_all = "remove_for_all"
@@ -30,6 +60,15 @@ export class remove_for_all extends update_for_all_op {
     }
     get() { return this.content; }
 }
+export const mich_to_update_op = (m: att.Micheline): update_op => {
+    if ((m as att.Msingle).prim == "Left") {
+        return new add_operator(operator_param.from_mich((m as att.Msingle).args[0]));
+    }
+    if ((m as att.Msingle).prim == "Right") {
+        return new remove_operator(operator_param.from_mich((m as att.Msingle).args[0]));
+    }
+    throw new Error("mich_to_update_op : invalid micheline");
+};
 export const mich_to_update_for_all_op = (m: att.Micheline): update_for_all_op => {
     if ((m as att.Msingle).prim == "Left") {
         return new add_for_all(att.Address.from_mich((m as att.Msingle).args[0]));
@@ -306,9 +345,9 @@ export const operator_for_all_container_mich_type: att.MichelineType = att.pair_
     att.prim_annot_to_mich_type("address", ["%fa_oaddr"]),
     att.prim_annot_to_mich_type("address", ["%fa_oowner"])
 ], []), att.prim_annot_to_mich_type("unit", []), []);
-const update_operators_arg_to_mich = (upl: Array<att.Or<operator_param, operator_param>>): att.Micheline => {
+const update_operators_arg_to_mich = (upl: Array<update_op>): att.Micheline => {
     return att.list_to_mich(upl, x => {
-        return x.to_mich((x => { return x.to_mich(); }), (x => { return x.to_mich(); }));
+        return x.to_mich();
     });
 }
 const update_operators_for_all_arg_to_mich = (upl: Array<update_for_all_op>): att.Micheline => {
@@ -369,7 +408,7 @@ export class Tzombies {
         }
         throw new Error("Contract not initialised");
     }
-    async update_operators(upl: Array<att.Or<operator_param, operator_param>>, params: Partial<ex.Parameters>): Promise<att.CallResult> {
+    async update_operators(upl: Array<update_op>, params: Partial<ex.Parameters>): Promise<att.CallResult> {
         if (this.address != undefined) {
             return await ex.call(this.address, "update_operators", update_operators_arg_to_mich(upl), params);
         }
@@ -402,7 +441,7 @@ export class Tzombies {
         }
         throw new Error("Contract not initialised");
     }
-    async get_update_operators_param(upl: Array<att.Or<operator_param, operator_param>>, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+    async get_update_operators_param(upl: Array<update_op>, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
         if (this.address != undefined) {
             return await ex.get_call_param(this.address, "update_operators", update_operators_arg_to_mich(upl), params);
         }
@@ -560,9 +599,9 @@ export class Tzombies {
         r1: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r1\"")]),
         FA2_INSUFFICIENT_BALANCE: att.string_to_mich("\"FA2_INSUFFICIENT_BALANCE\""),
         FA2_NOT_OPERATOR: att.string_to_mich("\"FA2_NOT_OPERATOR\""),
-        CALLER_NOT_OWNER: att.string_to_mich("\"CALLER_NOT_OWNER\""),
+        FA2_NOT_OWNER: att.string_to_mich("\"FA2_NOT_OWNER\""),
+        NO_TRANSFER: att.string_to_mich("\"NO_TRANSFER\""),
         FA2_TOKEN_UNDEFINED: att.string_to_mich("\"FA2_TOKEN_UNDEFINED\"")
     };
 }
 export const tzombies = new Tzombies();
-

@@ -13,6 +13,7 @@ asset token_metadata to big_map {
 constant CALLER_NOT_OWNER         : string = "CALLER_NOT_OWNER"
 constant FA2_INSUFFICIENT_BALANCE : string = "FA2_INSUFFICIENT_BALANCE"
 constant FA2_NOT_OPERATOR         : string = "FA2_NOT_OPERATOR"
+constant FA2_NOT_OWNER            : string = "FA2_NOT_OWNER"
 constant FA2_TOKEN_UNDEFINED      : string = "FA2_TOKEN_UNDEFINED"
 
 /* PARAMETERS ------------------------------------------------------------- */
@@ -57,15 +58,20 @@ record operator_param {
   opp_token_id : nat
 } as ((owner, (operator, token_id)))
 
-entry update_operators (upl : list<or<operator_param, operator_param>>) {
+enum update_op =
+| add_operator<operator_param>
+| remove_operator<operator_param>
+
+entry update_operators (upl : list<update_op>) {
+  no transfer
   effect {
     for up in upl do
       match up with
-      | left(param) -> (* add *)
-        do_require(param.opp_owner = caller , CALLER_NOT_OWNER);
+      | add_operator(param) -> (* add *)
+        do_require(param.opp_owner = caller , FA2_NOT_OWNER);
         operator.put({param.opp_operator; param.opp_token_id; param.opp_owner})
-      | right(param) -> (* remove *)
-        do_require(param.opp_owner = caller , CALLER_NOT_OWNER);
+      | remove_operator(param) -> (* remove *)
+        do_require(param.opp_owner = caller , FA2_NOT_OWNER);
         operator.remove((param.opp_operator, param.opp_token_id, param.opp_owner))
       end;
     done;

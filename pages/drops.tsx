@@ -1,21 +1,21 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { CardMode, TokenList } from "../components/Token"
 import { Alert, Snackbar, Typography } from "@mui/material"
-import { Tzombies } from "../contracts/fa2"
+import { Tzombies } from "../contracts/bindings/fa2"
 import { CallResult, Nat } from "@completium/archetype-ts-types"
 import { useTzombiesContext } from "../components/TzombiesProvider"
 
 const Drops = () => {
   const [minted, setMinted] = useState<CallResult>()
   const [registered, setRegistered] = useState<number[]>([])
-  const { contract } = useTzombiesContext()
+  const { fa2, fetchInventory } = useTzombiesContext()
 
   useEffect(() => {
-    if (!contract) {
+    if (!fa2) {
       return
     }
     const getRegistered = async () => {
-      const registered = await contract.get_registered()
+      const registered = await fa2.get_registered()
       setRegistered(
         registered.map((id) => id.to_number()).sort((a, b) => a - b)
       )
@@ -23,18 +23,21 @@ const Drops = () => {
     getRegistered().catch((err) => {
       console.error(err)
     })
-  }, [contract])
+  }, [fa2])
 
-  const handleTokenClick = useCallback((id: number) => {
-    const mint = async () => {
-      const contract = new Tzombies(process.env.NEXT_PUBLIC_CONTRACT_ADDRESS)
-      const result = await contract.mint(new Nat(id), {})
-      setMinted(result)
-    }
-    mint().then(() => {
-      console.log("minted")
-    })
-  }, [])
+  const handleTokenClick = useCallback(
+    (id: number) => {
+      const mint = async () => {
+        const fa2 = new Tzombies(process.env.NEXT_PUBLIC_FA2_ADDRESS)
+        const result = await fa2.mint(new Nat(id), {})
+        setMinted(result)
+      }
+      mint().then(() => {
+        fetchInventory()
+      })
+    },
+    [fetchInventory]
+  )
   return (
     <>
       <Snackbar open={!!minted} onClose={() => setMinted(undefined)}>

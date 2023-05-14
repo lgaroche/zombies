@@ -6,13 +6,13 @@ import { useTzombiesContext } from "../components/TzombiesProvider"
 
 const Inventory = () => {
   const { account, Tezos, balance, getBalance } = useWalletContext()
-  const { contract, inventory, fetchInventory } = useTzombiesContext()
+  const { fa2, inventory, fetchInventory } = useTzombiesContext()
 
   useEffect(() => {
     if (!Tezos) {
       return
     }
-    if (!contract || contract.address === undefined) {
+    if (!fa2 || fa2.address === undefined) {
       console.log("contract not ready")
       return
     }
@@ -40,7 +40,7 @@ const Inventory = () => {
       // }
       // setInventory(tokens)
     })()
-  }, [account, Tezos, contract])
+  }, [account, Tezos, fa2])
 
   const handleRefresh = useCallback(() => {
     getBalance()
