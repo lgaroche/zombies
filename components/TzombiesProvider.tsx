@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { Tzombies, ledger_key } from "../contracts/bindings/fa2"
 import { useWalletContext } from "./WalletProvider"
 import { Address } from "@completium/archetype-ts-types"
@@ -52,14 +52,17 @@ const TzombiesProvider = ({ children }: { children: React.ReactNode }) => {
     fetchInventory()
   }, [fetchInventory])
 
+  const value = useMemo(
+    () => ({
+      fa2,
+      inventory,
+      fetchInventory,
+    }),
+    [fa2, inventory, fetchInventory]
+  )
+
   return (
-    <TzombiesContext.Provider
-      value={{
-        fa2,
-        inventory,
-        fetchInventory,
-      }}
-    >
+    <TzombiesContext.Provider value={value}>
       {children}
     </TzombiesContext.Provider>
   )

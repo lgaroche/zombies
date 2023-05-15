@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { Zombie_market } from "../contracts/bindings/market"
 import { useWalletContext } from "./WalletProvider"
 import { useTzombiesContext } from "./TzombiesProvider"
@@ -68,10 +68,19 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
     await fa2.update_operators_for_all([arg], {})
   }, [fa2, market])
 
+  const value = useMemo(
+    () => ({
+      market,
+      isApproved,
+      approve,
+      revoke,
+      fetchMarketplaceApproval,
+    }),
+    [market, isApproved, approve, revoke, fetchMarketplaceApproval]
+  )
+
   return (
-    <MarketProviderContext.Provider
-      value={{ market, isApproved, approve, revoke, fetchMarketplaceApproval }}
-    >
+    <MarketProviderContext.Provider value={value}>
       {children}
     </MarketProviderContext.Provider>
   )
