@@ -81,7 +81,7 @@ export const order_container_mich_type: att.MichelineType = att.pair_annot_to_mi
     att.prim_annot_to_mich_type("nat", ["%amount"]),
     att.prim_annot_to_mich_type("mutez", ["%price"])
 ], []), []);
-const create_sale_arg_to_mich = (token_id_: att.Nat, amount_: att.Nat, price_: att.Tez): att.Micheline => {
+const sell_arg_to_mich = (token_id_: att.Nat, amount_: att.Nat, price_: att.Tez): att.Micheline => {
     return att.pair_to_mich([
         token_id_.to_mich(),
         amount_.to_mich(),
@@ -111,9 +111,9 @@ export class Zombie_market {
         }
         throw new Error("Contract not initialised");
     }
-    async create_sale(token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, params: Partial<ex.Parameters>): Promise<att.CallResult> {
+    async sell(token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, params: Partial<ex.Parameters>): Promise<att.CallResult> {
         if (this.address != undefined) {
-            return await ex.call(this.address, "create_sale", create_sale_arg_to_mich(token_id_, amount_, price_), params);
+            return await ex.call(this.address, "sell", sell_arg_to_mich(token_id_, amount_, price_), params);
         }
         throw new Error("Contract not initialised");
     }
@@ -123,9 +123,9 @@ export class Zombie_market {
         }
         throw new Error("Contract not initialised");
     }
-    async get_create_sale_param(token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+    async get_sell_param(token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
         if (this.address != undefined) {
-            return await ex.get_call_param(this.address, "create_sale", create_sale_arg_to_mich(token_id_, amount_, price_), params);
+            return await ex.get_call_param(this.address, "sell", sell_arg_to_mich(token_id_, amount_, price_), params);
         }
         throw new Error("Contract not initialised");
     }
@@ -135,17 +135,24 @@ export class Zombie_market {
         }
         throw new Error("Contract not initialised");
     }
+    async get_fa2(): Promise<att.Address> {
+        if (this.address != undefined) {
+            const storage = await ex.get_raw_storage(this.address);
+            return att.Address.from_mich((storage as att.Mpair).args[0]);
+        }
+        throw new Error("Contract not initialised");
+    }
     async get_order(): Promise<order_container> {
         if (this.address != undefined) {
             const storage = await ex.get_raw_storage(this.address);
-            return att.mich_to_map((storage as att.Mpair).args[0], (x, y) => [att.Nat.from_mich(x), order_value.from_mich(y)]);
+            return att.mich_to_map((storage as att.Mpair).args[1], (x, y) => [att.Nat.from_mich(x), order_value.from_mich(y)]);
         }
         throw new Error("Contract not initialised");
     }
     async get_next_order_id(): Promise<att.Nat> {
         if (this.address != undefined) {
             const storage = await ex.get_raw_storage(this.address);
-            return att.Nat.from_mich((storage as att.Mpair).args[1]);
+            return att.Nat.from_mich((storage as att.Mpair).args[2]);
         }
         throw new Error("Contract not initialised");
     }

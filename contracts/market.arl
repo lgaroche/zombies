@@ -1,4 +1,4 @@
-archetype zombie_market
+archetype zombie_market(fa2: address)
 
 record transfer_destination {
   to_dest           : address;
@@ -21,7 +21,7 @@ asset order {
 
 variable next_order_id: nat = 1
 
-entry create_sale(token_id_: nat, amount_: nat, price_: tez) {
+entry sell(token_id_: nat, amount_: nat, price_: tez) {
     require {
         r1: amount_ > 0;
     }
@@ -56,7 +56,7 @@ entry buy(order_id: nat, amount_: nat) {
             token_id_dest = order[order_id].token_id;
             token_amount_dest = amount_
         };
-        transfer 0tz to KT1SbumVDPUJ6mcteunLmtv8Ktg82YExVGvz call %transfer<list<transfer_param>>([{
+        transfer 0tz to fa2 call %transfer<list<transfer_param>>([{
             tp_from = order[order_id].seller; 
             tp_txs = [tx]
         }]);

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { CardMode, TokenList } from "../components/Token"
-import { Alert, Snackbar, Typography } from "@mui/material"
+import { TokenList } from "../components/Token"
+import { Alert, Button, Snackbar, Typography } from "@mui/material"
 import { Tzombies } from "../contracts/bindings/fa2"
 import { CallResult, Nat } from "@completium/archetype-ts-types"
 import { useTzombiesContext } from "../components/TzombiesProvider"
@@ -38,6 +38,14 @@ const Drops = () => {
     },
     [fetchInventory]
   )
+
+  const ClaimButton = useCallback(
+    (id: number) => <Button onClick={() => handleTokenClick(id)}>Claim</Button>,
+    [handleTokenClick]
+  )
+
+  const Extra = useCallback(() => <></>, [])
+
   return (
     <>
       <Snackbar open={!!minted} onClose={() => setMinted(undefined)}>
@@ -46,9 +54,9 @@ const Drops = () => {
       <Typography variant="h4">Drops</Typography>
       <TokenList
         tokens={registered}
-        mode={CardMode.Claim}
+        actions={ClaimButton}
         onClick={(id) => handleTokenClick(id)}
-        extra={() => <></>}
+        extra={Extra}
       />
     </>
   )

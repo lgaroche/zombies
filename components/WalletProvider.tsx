@@ -59,42 +59,35 @@ const WalletProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [Tezos, wallet])
 
-  const connect = useCallback(() => {
-    ;(async () => {
-      try {
-        await wallet?.requestPermissions({
-          network: {
-            type: NetworkType.CUSTOM,
-            rpcUrl:
-              process.env.NEXT_PUBLIC_BEACON_NETWORK || "http://localhost:8732",
-          },
-        })
-        const active = await wallet?.client.getActiveAccount()
-        console.log(active)
-        setAccount(active)
-      } catch (e) {
-        console.error(e)
-      }
-    })()
+  const connect = useCallback(async () => {
+    try {
+      await wallet?.requestPermissions({
+        network: {
+          type: NetworkType.CUSTOM,
+          rpcUrl:
+            process.env.NEXT_PUBLIC_BEACON_NETWORK || "http://localhost:8732",
+        },
+      })
+      const active = await wallet?.client.getActiveAccount()
+      console.log(active)
+      setAccount(active)
+    } catch (e) {
+      console.error(e)
+    }
   }, [wallet])
 
-  const disconnect = useCallback(() => {
-    ;(async () => {
-      await wallet?.clearActiveAccount()
-      await wallet?.disconnect()
-    })().then(() => {
-      setAccount(undefined)
-    })
+  const disconnect = useCallback(async () => {
+    await wallet?.clearActiveAccount()
+    await wallet?.disconnect()
+    setAccount(undefined)
   }, [wallet])
 
-  const getBalance = useCallback(() => {
-    ;(async () => {
-      if (!Tezos || !account) {
-        return
-      }
-      const balance = await Tezos.tz.getBalance(account.address)
-      setBalance(balance.dividedBy(1_000_000).toNumber())
-    })()
+  const getBalance = useCallback(async () => {
+    if (!Tezos || !account) {
+      return
+    }
+    const balance = await Tezos.tz.getBalance(account.address)
+    setBalance(balance.dividedBy(1_000_000).toNumber())
   }, [Tezos, account])
 
   useEffect(() => {

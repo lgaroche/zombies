@@ -14,6 +14,7 @@ import NavBar from "../components/NavBar"
 import Container from "@mui/material/Container"
 import { WalletProvider } from "../components/WalletProvider"
 import { TzombiesProvider } from "../components/TzombiesProvider"
+import { MarketProvider } from "../components/MarketProvider"
 
 export default function App({ Component, pageProps }: AppProps) {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)")
@@ -33,10 +34,12 @@ export default function App({ Component, pageProps }: AppProps) {
       <CssBaseline />
       <WalletProvider>
         <TzombiesProvider>
-          <NavBar />
-          <Container sx={{ mt: 12 }}>
-            <Component {...pageProps} />
-          </Container>
+          <MarketProvider>
+            <NavBar />
+            <Container sx={{ mt: 12 }}>
+              <Component {...pageProps} />
+            </Container>
+          </MarketProvider>
         </TzombiesProvider>
       </WalletProvider>
     </ThemeProvider>

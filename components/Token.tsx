@@ -1,22 +1,14 @@
 import React from "react"
-import Button from "@mui/material/Button"
 import Card from "@mui/material/Card"
 import CardActions from "@mui/material/CardActions"
 import CardContent from "@mui/material/CardContent"
 import CardMedia from "@mui/material/CardMedia"
 import { Grid } from "@mui/material"
 
-enum CardMode {
-  None,
-  Claim,
-  Buy,
-}
-
 interface TokenProps {
   id: number
-  mode: CardMode
+  actions?: React.ReactNode
   extra?: React.ReactNode
-  onClick: () => void
 }
 
 const images = [
@@ -41,33 +33,29 @@ const TokenContent = ({
   </>
 )
 
-const Token = ({ id, mode, extra, onClick }: TokenProps) => {
+const Token = ({ id, actions, extra }: TokenProps) => {
   return (
     <Card sx={{ maxWidth: 200 }}>
       <TokenContent id={id} extra={extra} />
-
-      <CardActions>
-        {mode === CardMode.Claim && <Button onClick={onClick}>Claim</Button>}
-      </CardActions>
+      <CardActions>{actions}</CardActions>
     </Card>
   )
 }
 
 interface TokenListProps {
   tokens: number[]
-  mode: CardMode
+  actions: (id: number) => React.ReactNode
   onClick?: (id: number) => void
   extra?: (id: number) => React.ReactNode
 }
 
-const TokenList = ({ tokens, mode, onClick, extra }: TokenListProps) => (
+const TokenList = ({ tokens, actions, extra }: TokenListProps) => (
   <Grid container spacing={2}>
     {tokens.map((id) => (
       <Grid item key={id}>
         <Token
-          onClick={() => onClick?.(id)}
           id={id}
-          mode={mode}
+          actions={actions && actions(id)}
           extra={extra && extra(id)}
         />
       </Grid>
@@ -75,4 +63,4 @@ const TokenList = ({ tokens, mode, onClick, extra }: TokenListProps) => (
   </Grid>
 )
 
-export { Token, TokenList, CardMode }
+export { Token, TokenList, TokenContent }
