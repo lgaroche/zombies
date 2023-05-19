@@ -63,4 +63,4 @@ const TokenList = ({ tokens, actions, extra }: TokenListProps) => (
   </Grid>
 )
 
-export { Token, TokenList, TokenContent }
+export { Token, TokenList, TokenContent, images }

@@ -3,7 +3,7 @@ import { TokenList } from "../components/Token"
 import { Alert, Button, Snackbar, Typography } from "@mui/material"
 import { Tzombies } from "../contracts/bindings/fa2"
 import { CallResult, Nat } from "@completium/archetype-ts-types"
-import { useTzombiesContext } from "../components/TzombiesProvider"
+import { useTzombiesContext } from "../components/providers/TzombiesProvider"
 
 const Drops = () => {
   const [minted, setMinted] = useState<CallResult>()

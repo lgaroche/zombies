@@ -16,7 +16,7 @@ ccli call fa2 --entry register --arg '{"id": 2, "info": [{"key": "", "value": "0
 ccli call fa2 --entry mint --arg '{"id": 1}'
 
 # create sale
-ccli call market --entry sell --arg '{"token_id_": 1, "amount_": 1, "price_": 100}'
+ccli call market --entry sell --arg '{"token_id_": 1, "amount_": 1, "price_": 100, "expiry_": "2023-06-01 23:00:00"}'
 
 # switch to buyer account and buy the NFT
 ccli set account bob

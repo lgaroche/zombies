@@ -12,9 +12,9 @@ import "@fontsource/roboto/500.css"
 import "@fontsource/roboto/700.css"
 import NavBar from "../components/NavBar"
 import Container from "@mui/material/Container"
-import { WalletProvider } from "../components/WalletProvider"
-import { TzombiesProvider } from "../components/TzombiesProvider"
-import { MarketProvider } from "../components/MarketProvider"
+import { WalletProvider } from "../components/providers/WalletProvider"
+import { TzombiesProvider } from "../components/providers/TzombiesProvider"
+import { MarketProvider } from "../components/providers/MarketProvider"
 
 export default function App({ Component, pageProps }: AppProps) {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)")

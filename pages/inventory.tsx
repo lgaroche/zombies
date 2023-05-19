@@ -1,8 +1,8 @@
 import { Button, Typography } from "@mui/material"
 import React, { useCallback, useState } from "react"
-import { useWalletContext } from "../components/WalletProvider"
+import { useWalletContext } from "../components/providers/WalletProvider"
 import { TokenList } from "../components/Token"
-import { useTzombiesContext } from "../components/TzombiesProvider"
+import { useTzombiesContext } from "../components/providers/TzombiesProvider"
 import SaleDialog from "../components/SaleDialog"
 
 const Inventory = () => {

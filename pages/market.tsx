@@ -1,13 +1,36 @@
-import { Button, Typography } from "@mui/material"
-import React, { useCallback } from "react"
-import { useWalletContext } from "../components/WalletProvider"
-import { useMarketProviderContext } from "../components/MarketProvider"
+import {
+  Button,
+  Dialog,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Typography,
+} from "@mui/material"
+import React, { useCallback, useState } from "react"
+import { useWalletContext } from "../components/providers/WalletProvider"
+import {
+  Sale,
+  useMarketProviderContext,
+} from "../components/providers/MarketProvider"
+import { DateTime } from "luxon"
+import Image from "next/image"
+import { images } from "../components/Token"
+import BuyDialog from "../components/BuyDialog"
 
 const Market = () => {
   const { account } = useWalletContext()
-  const { isApproved, approve, revoke, fetchMarketplaceApproval } =
-    useMarketProviderContext()
-  console.log("isApproved", isApproved)
+  const {
+    isApproved,
+    sales,
+    approve,
+    revoke,
+    fetchMarketplaceApproval,
+    fetchSales,
+  } = useMarketProviderContext()
+
+  const [buySale, setBuySale] = useState<Sale>()
 
   const handleApprove = useCallback(async () => {
     await approve()
@@ -19,9 +42,15 @@ const Market = () => {
     await fetchMarketplaceApproval()
   }, [revoke, fetchMarketplaceApproval])
 
+  const handleRefresh = useCallback(async () => {
+    await fetchMarketplaceApproval()
+    await fetchSales()
+  }, [fetchMarketplaceApproval, fetchSales])
+
   return (
     <>
       <Typography variant="h4">Marketplace</Typography>
+      <Button onClick={handleRefresh}>Refresh</Button>
       {isApproved ? (
         <>
           <p>
@@ -44,6 +73,50 @@ const Market = () => {
           </Button>
         </>
       )}
+
+      <BuyDialog onClose={() => setBuySale(undefined)} sale={buySale} />
+
+      <Table size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell>Token</TableCell>
+            <TableCell>Quantity</TableCell>
+            <TableCell>Price</TableCell>
+            <TableCell>Seller</TableCell>
+            <TableCell>Expiry</TableCell>
+            <TableCell>Actions</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {sales.map((sale) => (
+            <TableRow key={sale.saleId}>
+              <TableCell>
+                <Image
+                  src={images[sale.parameters.tokenId % 2]}
+                  alt={`token #${sale.parameters.tokenId}`}
+                  width={50}
+                  height={50}
+                />
+              </TableCell>
+              <TableCell>{sale.parameters.amount}</TableCell>
+              <TableCell>{sale.parameters.price / 1_000_000} ꜩ</TableCell>
+              <TableCell>
+                {sale.seller.toString() === account?.address
+                  ? "you"
+                  : sale.seller.toString()}
+              </TableCell>
+              <TableCell>
+                {DateTime.fromJSDate(sale.parameters.expiry).toRelative()}
+              </TableCell>
+              <TableCell>
+                <Button variant="outlined" onClick={() => setBuySale(sale)}>
+                  Buy
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </>
   )
 }

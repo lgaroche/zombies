@@ -8,7 +8,7 @@ import MenuIcon from "@mui/icons-material/Menu"
 import Box from "@mui/material/Box"
 import { ClickAwayListener } from "@mui/material"
 import { useRouter } from "next/router"
-import { useWalletContext } from "./WalletProvider"
+import { useWalletContext } from "./providers/WalletProvider"
 import { CloseRounded } from "@mui/icons-material"
 
 const Menu = () => {
