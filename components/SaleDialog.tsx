@@ -10,10 +10,15 @@ import {
   Button,
   Snackbar,
   Alert,
+  TextField,
+  Chip,
 } from "@mui/material"
 import React, { useCallback, useState } from "react"
 import { TokenContent } from "./Token"
 import { useMarketProviderContext } from "./providers/MarketProvider"
+import { DateTimePicker } from "@mui/x-date-pickers"
+import { DateTime } from "luxon"
+import { useTzombiesContext } from "./providers/TzombiesProvider"
 
 interface SaleDialogProps {
   id: number
@@ -22,89 +27,103 @@ interface SaleDialogProps {
 
 const SaleDialog = ({ id, onClose }: SaleDialogProps) => {
   const { sell } = useMarketProviderContext()
+  const { inventory } = useTzombiesContext()
   const [amount, setAmount] = useState<number>(1)
   const [price, setPrice] = useState<number>(10)
-  const [expiry, setExpiry] = useState<string>(new Date().toISOString())
+  const [expiry, setExpiry] = useState<DateTime | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
-  const [saleId, setSaleId] = useState<string>()
+  const [opHash, setOpHash] = useState<string>()
 
   const handleSell = useCallback(
     async (tokenId: number) => {
-      let expiryDate: Date
+      if (!expiry) return
+      setLoading(true)
       try {
-        expiryDate = new Date(expiry)
+        const res = await sell({
+          tokenId,
+          amount,
+          price,
+          expiry: expiry.toJSDate(),
+        })
+        if (res) {
+          setOpHash(res.operation_hash)
+          onClose()
+        }
       } catch (e: any) {
         console.error(e)
-        return
+      } finally {
+        setLoading(false)
       }
-      setLoading(true)
-      const res = await sell({
-        tokenId,
-        amount,
-        price,
-        expiry: expiryDate,
-      })
-      if (res) {
-        setSaleId(res.operation_hash)
-      }
-      setLoading(false)
     },
-    [price, amount, sell, expiry]
+    [price, amount, sell, expiry, onClose]
   )
+
+  const expiryValid = expiry && expiry.diffNow().toMillis() > 0
 
   return (
     <>
-      <Snackbar open={!!saleId} onClose={() => setSaleId(undefined)}>
-        <Alert severity={"success"}>Sale id: {saleId}</Alert>
+      <Snackbar open={!!opHash} onClose={() => setOpHash(undefined)}>
+        <Alert severity={"success"}>Sale: {opHash}</Alert>
       </Snackbar>
       <Dialog open={id > 0} onClose={onClose}>
         <DialogTitle>Sell item</DialogTitle>
         <DialogContent>
           <TokenContent id={id} />
-          <FormControl fullWidth sx={{ m: 1 }}>
-            <InputLabel htmlFor="price">Price per item</InputLabel>
-            <OutlinedInput
-              id="price"
-              startAdornment={
+
+          <TextField
+            id="price"
+            fullWidth
+            sx={{ m: 1 }}
+            label="Price per item"
+            type="number"
+            inputProps={{
+              inputMode: "numeric",
+              pattern: "[0-9]*",
+            }}
+            InputProps={{
+              startAdornment: (
                 <InputAdornment position="start">ꜩ </InputAdornment>
-              }
-              label="Price per item"
-              type="number"
-              inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
-              value={price}
-              onChange={({ target }) => setPrice(Number(target.value))}
-            />
-          </FormControl>
-          <FormControl fullWidth sx={{ m: 1 }}>
-            <InputLabel htmlFor="qty">Quantity</InputLabel>
-            <OutlinedInput
-              id="qty"
-              label="Quantity"
-              type="number"
-              inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
-              value={amount}
-              onChange={({ target }) =>
-                setAmount(Math.floor(Number(target.value)) || 0)
-              }
-            />
-          </FormControl>
-          <FormControl fullWidth sx={{ m: 1 }}>
-            <InputLabel htmlFor="expiry">Expiry</InputLabel>
-            <OutlinedInput
-              id="expiry"
-              label="aa"
-              type="text"
-              value={expiry}
-              onChange={({ target }) => setExpiry(target.value)}
-            />
-          </FormControl>
+              ),
+            }}
+            value={price}
+            onChange={({ target }) => setPrice(Number(target.value))}
+          />
+
+          <TextField
+            id="qty"
+            fullWidth
+            sx={{ m: 1 }}
+            label="Quantity"
+            type="number"
+            inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+            value={amount}
+            onChange={({ target }) =>
+              setAmount(Math.floor(parseInt(target.value)) || 0)
+            }
+          />
+
+          <DateTimePicker
+            label="Expiry"
+            disablePast
+            sx={{ m: 1 }}
+            value={expiry}
+            onChange={(value) => setExpiry(value)}
+          />
+          <span>
+            {expiry && (
+              <Chip
+                label={expiry?.toRelative()}
+                color={expiryValid ? "default" : "error"}
+              />
+            )}
+          </span>
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>Cancel</Button>
           <Button
             onClick={() => handleSell(id)}
             variant="contained"
-            disabled={loading}
+            disabled={loading || !expiryValid}
           >
             {loading ? "In progress..." : "Sell"}
           </Button>

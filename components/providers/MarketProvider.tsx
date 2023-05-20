@@ -18,6 +18,7 @@ interface MarketProviderContextProps {
   approve: () => Promise<void>
   revoke: () => Promise<void>
   sell: (params: SellParameters) => Promise<CallResult | undefined>
+  buy: (sale: Sale, amount: number) => Promise<CallResult | undefined>
   fetchMarketplaceApproval: () => Promise<void>
   fetchSales: () => Promise<void>
 }
@@ -28,6 +29,9 @@ const MarketProviderContext = React.createContext<MarketProviderContextProps>({
   approve: async () => {},
   revoke: async () => {},
   sell: async () => {
+    throw new Error("MarketProviderContext not initialized")
+  },
+  buy: async () => {
     throw new Error("MarketProviderContext not initialized")
   },
   fetchMarketplaceApproval: async () => {},
@@ -96,6 +100,7 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
         .get(order.seller)
         ?.get(order.token_id.to_number())
       const qty = Math.min(order.amount.to_number(), amount || 0)
+      if (qty < 1) continue
 
       sales.push({
         saleId: i,
@@ -147,6 +152,16 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
     [market]
   )
 
+  const buy = useCallback(
+    async (sale: Sale, amount: number) => {
+      if (!market) return
+      return await market.buy(new Nat(sale.saleId), new Nat(amount), {
+        amount: new Tez(sale.parameters.price * amount, "mutez"),
+      })
+    },
+    [market]
+  )
+
   const value = useMemo(
     () => ({
       market,
@@ -155,6 +170,7 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
       approve,
       revoke,
       sell,
+      buy,
       fetchMarketplaceApproval,
       fetchSales,
     }),
@@ -165,6 +181,7 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
       approve,
       revoke,
       sell,
+      buy,
       fetchMarketplaceApproval,
       fetchSales,
     ]

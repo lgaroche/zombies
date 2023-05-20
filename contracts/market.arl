@@ -24,7 +24,7 @@ variable next_order_id: nat = 1
 
 entry sell(token_id_: nat, amount_: nat, price_: tez, expiry_: date) {
     require {
-        r1: amount_ > 0;
+        r_sell_amount: amount_ > 0;
         r_expiry: expiry_ > now;
     }
 
@@ -44,9 +44,9 @@ entry sell(token_id_: nat, amount_: nat, price_: tez, expiry_: date) {
 
 entry buy(order_id: nat, amount_: nat) {
     require {
-        r2: amount_ > 0;
-        r3: order.contains(order_id) and order[order_id].amount >= amount_;
-        r4: transferred = amount_ * order[order_id].price;
+        r_buy_amount: amount_ > 0;
+        r_order: order.contains(order_id) and order[order_id].amount >= amount_;
+        r_value: transferred = amount_ * order[order_id].price;
         r_expired: order[order_id].expiry > now;
     }
     effect {

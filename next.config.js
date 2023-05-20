@@ -1,8 +1,6 @@
-const { protocols } = require("@taquito/taquito")
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: false,
+  reactStrictMode: true,
   swcMinify: true,
   rewrites: async () => [
     {

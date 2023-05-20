@@ -1,13 +1,15 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { TokenList } from "../components/Token"
 import { Alert, Button, Snackbar, Typography } from "@mui/material"
-import { Tzombies } from "../contracts/bindings/fa2"
+import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart"
 import { CallResult, Nat } from "@completium/archetype-ts-types"
 import { useTzombiesContext } from "../components/providers/TzombiesProvider"
+import { useWalletContext } from "../components/providers/WalletProvider"
 
 const Drops = () => {
   const [minted, setMinted] = useState<CallResult>()
   const [registered, setRegistered] = useState<number[]>([])
+  const { Tezos } = useWalletContext()
   const { fa2, fetchInventory } = useTzombiesContext()
 
   useEffect(() => {
@@ -27,8 +29,10 @@ const Drops = () => {
 
   const handleTokenClick = useCallback(
     (id: number) => {
+      if (!fa2 || !Tezos) {
+        return
+      }
       const mint = async () => {
-        const fa2 = new Tzombies(process.env.NEXT_PUBLIC_FA2_ADDRESS)
         const result = await fa2.mint(new Nat(id), {})
         setMinted(result)
       }
@@ -36,11 +40,18 @@ const Drops = () => {
         fetchInventory()
       })
     },
-    [fetchInventory]
+    [fetchInventory, fa2, Tezos]
   )
 
   const ClaimButton = useCallback(
-    (id: number) => <Button onClick={() => handleTokenClick(id)}>Claim</Button>,
+    (id: number) => (
+      <Button
+        onClick={() => handleTokenClick(id)}
+        startIcon={<AddShoppingCartIcon />}
+      >
+        Claim
+      </Button>
+    ),
     [handleTokenClick]
   )
 

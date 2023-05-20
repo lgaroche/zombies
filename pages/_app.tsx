@@ -12,9 +12,11 @@ import "@fontsource/roboto/500.css"
 import "@fontsource/roboto/700.css"
 import NavBar from "../components/NavBar"
 import Container from "@mui/material/Container"
+import { AdapterLuxon } from "@mui/x-date-pickers/AdapterLuxon"
 import { WalletProvider } from "../components/providers/WalletProvider"
 import { TzombiesProvider } from "../components/providers/TzombiesProvider"
 import { MarketProvider } from "../components/providers/MarketProvider"
+import { LocalizationProvider } from "@mui/x-date-pickers"
 
 export default function App({ Component, pageProps }: AppProps) {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)")
@@ -35,10 +37,12 @@ export default function App({ Component, pageProps }: AppProps) {
       <WalletProvider>
         <TzombiesProvider>
           <MarketProvider>
-            <NavBar />
-            <Container sx={{ mt: 12 }}>
-              <Component {...pageProps} />
-            </Container>
+            <LocalizationProvider dateAdapter={AdapterLuxon}>
+              <NavBar />
+              <Container sx={{ mt: 12 }}>
+                <Component {...pageProps} />
+              </Container>
+            </LocalizationProvider>
           </MarketProvider>
         </TzombiesProvider>
       </WalletProvider>

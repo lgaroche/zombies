@@ -7,7 +7,7 @@ import React, {
   useMemo,
   useState,
 } from "react"
-import { AccountInfo, NetworkType } from "@airgap/beacon-types"
+import { AccountInfo, NetworkType, ColorMode } from "@airgap/beacon-types"
 import { TezosToolkit } from "@taquito/taquito"
 import { BeaconWallet } from "@taquito/beacon-wallet"
 import { set_binder_tezos_toolkit } from "@completium/dapp-ts"
@@ -42,14 +42,14 @@ const WalletProvider = ({ children }: { children: ReactNode }) => {
   }, [account])
 
   useEffect(() => {
-    console.log("wallet", wallet)
     if (!Tezos) {
       const Tezos = new TezosToolkit(
         process.env.NEXT_PUBLIC_TEZOS_RPC || "http://localhost:8732"
       )
       const beacon = new BeaconWallet({
         name: "TZombies",
-        //preferredNetwork: NetworkType.CUSTOM,
+        preferredNetwork: NetworkType.GHOSTNET,
+        colorMode: ColorMode.DARK,
       })
       Tezos.setWalletProvider(beacon)
       set_binder_tezos_toolkit(Tezos)
@@ -57,15 +57,13 @@ const WalletProvider = ({ children }: { children: ReactNode }) => {
       setTezos(Tezos)
       setWallet(beacon)
     }
-  }, [Tezos, wallet])
+  }, [Tezos])
 
   const connect = useCallback(async () => {
     try {
       await wallet?.requestPermissions({
         network: {
-          type: NetworkType.CUSTOM,
-          rpcUrl:
-            process.env.NEXT_PUBLIC_BEACON_NETWORK || "http://localhost:8732",
+          type: NetworkType.GHOSTNET,
         },
       })
       const active = await wallet?.client.getActiveAccount()
@@ -80,6 +78,7 @@ const WalletProvider = ({ children }: { children: ReactNode }) => {
     await wallet?.clearActiveAccount()
     await wallet?.disconnect()
     setAccount(undefined)
+    setBalance(0)
   }, [wallet])
 
   const getBalance = useCallback(async () => {
