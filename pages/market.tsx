@@ -74,7 +74,13 @@ const Market = () => {
         </>
       )}
 
-      <BuyDialog onClose={() => setBuySale(undefined)} sale={buySale} />
+      <BuyDialog
+        onClose={() => {
+          setBuySale(undefined)
+          handleRefresh()
+        }}
+        sale={buySale}
+      />
 
       <Table size="small">
         <TableHead>
@@ -109,7 +115,11 @@ const Market = () => {
                 {DateTime.fromJSDate(sale.parameters.expiry).toRelative()}
               </TableCell>
               <TableCell>
-                <Button variant="outlined" onClick={() => setBuySale(sale)}>
+                <Button
+                  variant="outlined"
+                  onClick={() => setBuySale(sale)}
+                  disabled={sale.seller.toString() === account?.address}
+                >
                   Buy
                 </Button>
               </TableCell>
