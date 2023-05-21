@@ -36,7 +36,7 @@ const useTzombiesContext = () => React.useContext(TzombiesContext)
 
 const TzombiesProvider = ({ children }: { children: React.ReactNode }) => {
   const [fa2, setFa2] = useState<Tzombies>()
-  const { Tezos, account } = useWalletContext()
+  const { Tezos, account, getBalance } = useWalletContext()
   const [registered, setRegistered] = useState<Nat[]>([])
   const [inventory, setInventory] = useState<UserInventory>(new Map())
 
@@ -63,7 +63,8 @@ const TzombiesProvider = ({ children }: { children: React.ReactNode }) => {
       return
     }
     setInventory(await fetchFa2Balance(new Address(account.address)))
-  }, [account, fetchFa2Balance])
+    getBalance()
+  }, [account, fetchFa2Balance, getBalance])
 
   const transfer = useCallback(
     async (params: TransferParameters) => {

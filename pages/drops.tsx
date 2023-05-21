@@ -11,6 +11,7 @@ const Drops = () => {
   const [registered, setRegistered] = useState<number[]>([])
   const { Tezos } = useWalletContext()
   const { fa2, fetchInventory } = useTzombiesContext()
+  const [loading, setLoading] = useState<boolean>(false)
 
   useEffect(() => {
     if (!fa2) {
@@ -27,18 +28,21 @@ const Drops = () => {
     })
   }, [fa2])
 
-  const handleTokenClick = useCallback(
-    (id: number) => {
+  const handleClaim = useCallback(
+    async (id: number) => {
       if (!fa2 || !Tezos) {
         return
       }
-      const mint = async () => {
+      setLoading(true)
+      try {
         const result = await fa2.mint(new Nat(id), {})
         setMinted(result)
-      }
-      mint().then(() => {
         fetchInventory()
-      })
+      } catch (e: any) {
+        console.error(e)
+      } finally {
+        setLoading(false)
+      }
     },
     [fetchInventory, fa2, Tezos]
   )
@@ -46,13 +50,14 @@ const Drops = () => {
   const ClaimButton = useCallback(
     (id: number) => (
       <Button
-        onClick={() => handleTokenClick(id)}
+        disabled={loading}
+        onClick={() => handleClaim(id)}
         startIcon={<AddShoppingCartIcon />}
       >
-        Claim
+        {loading ? "In progress..." : "Claim"}
       </Button>
     ),
-    [handleTokenClick]
+    [handleClaim, loading]
   )
 
   const Extra = useCallback(() => <></>, [])
@@ -66,7 +71,7 @@ const Drops = () => {
       <TokenList
         tokens={registered}
         actions={ClaimButton}
-        onClick={(id) => handleTokenClick(id)}
+        onClick={(id) => handleClaim(id)}
         extra={Extra}
       />
     </>
