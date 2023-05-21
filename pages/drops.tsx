@@ -1,15 +1,18 @@
-import React, { useCallback, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { TokenList } from "../components/Token"
 import { Alert, Button, Snackbar, Typography } from "@mui/material"
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart"
+import RedeemIcon from "@mui/icons-material/Redeem"
 import { CallResult } from "@completium/archetype-ts-types"
 import { useTzombiesContext } from "../components/providers/TzombiesProvider"
+import { useWertProviderContext } from "../components/providers/WertProvider"
 
 const Drops = () => {
   const [minted, setMinted] = useState<CallResult>()
   const { freeClaim, fetchInventory, tokenInfo } = useTzombiesContext()
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>()
+  const { checkout } = useWertProviderContext()
 
   const handleClaim = useCallback(
     async (id: number) => {
@@ -20,24 +23,52 @@ const Drops = () => {
         fetchInventory()
       } catch (e: any) {
         console.error(e)
+        setError(e.message ?? JSON.stringify(e))
       } finally {
         setLoading(false)
       }
     },
-    [fetchInventory, freeClaim]
+    [freeClaim, fetchInventory]
+  )
+
+  const handlePurchase = useCallback(
+    async (id: number) => {
+      setLoading(true)
+      try {
+        await checkout(id)
+      } catch (e: any) {
+        console.error(e)
+        setError(e.message ?? JSON.stringify(e))
+      } finally {
+        setLoading(false)
+      }
+    },
+    [checkout]
   )
 
   const ClaimButton = useCallback(
     (id: number) => (
-      <Button
-        disabled={loading}
-        onClick={() => handleClaim(id)}
-        startIcon={<AddShoppingCartIcon />}
-      >
-        {loading ? "In progress..." : "Claim"}
-      </Button>
+      <>
+        {id === 1 ? (
+          <Button
+            disabled={loading}
+            onClick={() => handlePurchase(id)}
+            startIcon={<AddShoppingCartIcon />}
+          >
+            {loading ? "In progress..." : "Buy for 2ꜩ"}
+          </Button>
+        ) : (
+          <Button
+            disabled={loading}
+            onClick={() => handleClaim(id)}
+            startIcon={<RedeemIcon />}
+          >
+            {loading ? "In progress..." : "Claim for free"}
+          </Button>
+        )}
+      </>
     ),
-    [handleClaim, loading]
+    [handleClaim, handlePurchase, loading]
   )
 
   const Extra = useCallback(() => <></>, [])

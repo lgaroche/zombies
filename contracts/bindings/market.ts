@@ -49,7 +49,25 @@ export const transfer_param_mich_type: att.MichelineType = att.pair_array_to_mic
         ], [])
     ], []), ["%txs"])
 ], []);
-export const order_key_mich_type: att.MichelineType = att.prim_annot_to_mich_type("nat", []);
+export class order_key implements att.ArchetypeType {
+    constructor(public fa2: att.Address, public id: att.Nat) { }
+    toString(): string {
+        return JSON.stringify(this, null, 2);
+    }
+    to_mich(): att.Micheline {
+        return att.pair_to_mich([this.fa2.to_mich(), this.id.to_mich()]);
+    }
+    equals(v: order_key): boolean {
+        return att.micheline_equals(this.to_mich(), v.to_mich());
+    }
+    static from_mich(input: att.Micheline): order_key {
+        return new order_key(att.Address.from_mich((input as att.Mpair).args[0]), att.Nat.from_mich((input as att.Mpair).args[1]));
+    }
+}
+export const order_key_mich_type: att.MichelineType = att.pair_array_to_mich_type([
+    att.prim_annot_to_mich_type("address", ["%fa2"]),
+    att.prim_annot_to_mich_type("nat", ["%id"])
+], []);
 export class order_value implements att.ArchetypeType {
     constructor(public seller: att.Address, public token_id: att.Nat, public amount: att.Nat, public price: att.Tez, public expiry: Date) { }
     toString(): string {
@@ -73,30 +91,40 @@ export const order_value_mich_type: att.MichelineType = att.pair_array_to_mich_t
     att.prim_annot_to_mich_type("timestamp", ["%expiry"])
 ], []);
 export type order_container = Array<[
-    att.Nat,
+    order_key,
     order_value
 ]>;
-export const order_container_mich_type: att.MichelineType = att.pair_annot_to_mich_type("big_map", att.prim_annot_to_mich_type("nat", []), att.pair_array_to_mich_type([
+export const order_container_mich_type: att.MichelineType = att.pair_annot_to_mich_type("big_map", att.pair_array_to_mich_type([
+    att.prim_annot_to_mich_type("address", ["%fa2"]),
+    att.prim_annot_to_mich_type("nat", ["%id"])
+], []), att.pair_array_to_mich_type([
     att.prim_annot_to_mich_type("address", ["%seller"]),
     att.prim_annot_to_mich_type("nat", ["%token_id"]),
     att.prim_annot_to_mich_type("nat", ["%amount"]),
     att.prim_annot_to_mich_type("mutez", ["%price"]),
     att.prim_annot_to_mich_type("timestamp", ["%expiry"])
 ], []), []);
-const sell_arg_to_mich = (token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, expiry_: Date): att.Micheline => {
+const sell_arg_to_mich = (fa2_: att.Address, token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, expiry_: Date): att.Micheline => {
     return att.pair_to_mich([
+        fa2_.to_mich(),
         token_id_.to_mich(),
         amount_.to_mich(),
         price_.to_mich(),
         att.date_to_mich(expiry_)
     ]);
 }
-const cancel_arg_to_mich = (order_id: att.Nat): att.Micheline => {
-    return order_id.to_mich();
+const cancel_arg_to_mich = (order_id: [
+    att.Address,
+    att.Nat
+]): att.Micheline => {
+    return att.pair_to_mich([order_id[0].to_mich(), order_id[1].to_mich()]);
 }
-const buy_arg_to_mich = (order_id: att.Nat, amount_: att.Nat): att.Micheline => {
+const buy_arg_to_mich = (order_id: [
+    att.Address,
+    att.Nat
+], amount_: att.Nat): att.Micheline => {
     return att.pair_to_mich([
-        order_id.to_mich(),
+        att.pair_to_mich([order_id[0].to_mich(), order_id[1].to_mich()]),
         amount_.to_mich()
     ]);
 }
@@ -117,53 +145,58 @@ export class Zombie_market {
         }
         throw new Error("Contract not initialised");
     }
-    async sell(token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, expiry_: Date, params: Partial<ex.Parameters>): Promise<att.CallResult> {
+    async sell(fa2_: att.Address, token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, expiry_: Date, params: Partial<ex.Parameters>): Promise<att.CallResult> {
         if (this.address != undefined) {
-            return await ex.call(this.address, "sell", sell_arg_to_mich(token_id_, amount_, price_, expiry_), params);
+            return await ex.call(this.address, "sell", sell_arg_to_mich(fa2_, token_id_, amount_, price_, expiry_), params);
         }
         throw new Error("Contract not initialised");
     }
-    async cancel(order_id: att.Nat, params: Partial<ex.Parameters>): Promise<att.CallResult> {
+    async cancel(order_id: [
+        att.Address,
+        att.Nat
+    ], params: Partial<ex.Parameters>): Promise<att.CallResult> {
         if (this.address != undefined) {
             return await ex.call(this.address, "cancel", cancel_arg_to_mich(order_id), params);
         }
         throw new Error("Contract not initialised");
     }
-    async buy(order_id: att.Nat, amount_: att.Nat, params: Partial<ex.Parameters>): Promise<att.CallResult> {
+    async buy(order_id: [
+        att.Address,
+        att.Nat
+    ], amount_: att.Nat, params: Partial<ex.Parameters>): Promise<att.CallResult> {
         if (this.address != undefined) {
             return await ex.call(this.address, "buy", buy_arg_to_mich(order_id, amount_), params);
         }
         throw new Error("Contract not initialised");
     }
-    async get_sell_param(token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, expiry_: Date, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+    async get_sell_param(fa2_: att.Address, token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, expiry_: Date, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
         if (this.address != undefined) {
-            return await ex.get_call_param(this.address, "sell", sell_arg_to_mich(token_id_, amount_, price_, expiry_), params);
+            return await ex.get_call_param(this.address, "sell", sell_arg_to_mich(fa2_, token_id_, amount_, price_, expiry_), params);
         }
         throw new Error("Contract not initialised");
     }
-    async get_cancel_param(order_id: att.Nat, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+    async get_cancel_param(order_id: [
+        att.Address,
+        att.Nat
+    ], params: Partial<ex.Parameters>): Promise<att.CallParameter> {
         if (this.address != undefined) {
             return await ex.get_call_param(this.address, "cancel", cancel_arg_to_mich(order_id), params);
         }
         throw new Error("Contract not initialised");
     }
-    async get_buy_param(order_id: att.Nat, amount_: att.Nat, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+    async get_buy_param(order_id: [
+        att.Address,
+        att.Nat
+    ], amount_: att.Nat, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
         if (this.address != undefined) {
             return await ex.get_call_param(this.address, "buy", buy_arg_to_mich(order_id, amount_), params);
         }
         throw new Error("Contract not initialised");
     }
-    async get_fa2(): Promise<att.Address> {
+    async get_order_value(key: order_key): Promise<order_value | undefined> {
         if (this.address != undefined) {
             const storage = await ex.get_raw_storage(this.address);
-            return att.Address.from_mich((storage as att.Mpair).args[0]);
-        }
-        throw new Error("Contract not initialised");
-    }
-    async get_order_value(key: att.Nat): Promise<order_value | undefined> {
-        if (this.address != undefined) {
-            const storage = await ex.get_raw_storage(this.address);
-            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[1]).toString()), key.to_mich(), order_key_mich_type);
+            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[0]).toString()), key.to_mich(), order_key_mich_type);
             if (data != undefined) {
                 return order_value.from_mich(data);
             }
@@ -173,10 +206,10 @@ export class Zombie_market {
         }
         throw new Error("Contract not initialised");
     }
-    async has_order_value(key: att.Nat): Promise<boolean> {
+    async has_order_value(key: order_key): Promise<boolean> {
         if (this.address != undefined) {
             const storage = await ex.get_raw_storage(this.address);
-            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[1]).toString()), key.to_mich(), order_key_mich_type);
+            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[0]).toString()), key.to_mich(), order_key_mich_type);
             if (data != undefined) {
                 return true;
             }
@@ -189,11 +222,12 @@ export class Zombie_market {
     async get_next_order_id(): Promise<att.Nat> {
         if (this.address != undefined) {
             const storage = await ex.get_raw_storage(this.address);
-            return att.Nat.from_mich((storage as att.Mpair).args[2]);
+            return att.Nat.from_mich((storage as att.Mpair).args[1]);
         }
         throw new Error("Contract not initialised");
     }
     errors = {
+        OPTION_IS_NONE: att.string_to_mich("\"OPTION_IS_NONE\""),
         r_expired: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_expired\"")]),
         r_value: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_value\"")]),
         r_order: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_order\"")]),

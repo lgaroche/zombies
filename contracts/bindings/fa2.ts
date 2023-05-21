@@ -373,8 +373,11 @@ const register_arg_to_mich = (id: att.Nat, info: Array<[
         })
     ]);
 }
-const mint_arg_to_mich = (id: att.Nat): att.Micheline => {
-    return id.to_mich();
+const mint_arg_to_mich = (id: att.Nat, recipient: att.Address): att.Micheline => {
+    return att.pair_to_mich([
+        id.to_mich(),
+        recipient.to_mich()
+    ]);
 }
 const balance_of_arg_to_mich = (requests: Array<balance_of_request>): att.Micheline => {
     return att.list_to_mich(requests, x => {
@@ -435,9 +438,9 @@ export class Tzombies {
         }
         throw new Error("Contract not initialised");
     }
-    async mint(id: att.Nat, params: Partial<ex.Parameters>): Promise<att.CallResult> {
+    async mint(id: att.Nat, recipient: att.Address, params: Partial<ex.Parameters>): Promise<att.CallResult> {
         if (this.address != undefined) {
-            return await ex.call(this.address, "mint", mint_arg_to_mich(id), params);
+            return await ex.call(this.address, "mint", mint_arg_to_mich(id, recipient), params);
         }
         throw new Error("Contract not initialised");
     }
@@ -468,9 +471,9 @@ export class Tzombies {
         }
         throw new Error("Contract not initialised");
     }
-    async get_mint_param(id: att.Nat, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+    async get_mint_param(id: att.Nat, recipient: att.Address, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
         if (this.address != undefined) {
-            return await ex.get_call_param(this.address, "mint", mint_arg_to_mich(id), params);
+            return await ex.get_call_param(this.address, "mint", mint_arg_to_mich(id, recipient), params);
         }
         throw new Error("Contract not initialised");
     }
@@ -596,7 +599,8 @@ export class Tzombies {
         throw new Error("Contract not initialised");
     }
     errors = {
-        r1: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r1\"")]),
+        THIS_TOKEN_COSTS_2TZ: att.string_to_mich("\"This token costs 2tz\""),
+        r_registered: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_registered\"")]),
         FA2_INSUFFICIENT_BALANCE: att.string_to_mich("\"FA2_INSUFFICIENT_BALANCE\""),
         FA2_NOT_OPERATOR: att.string_to_mich("\"FA2_NOT_OPERATOR\""),
         FA2_NOT_OWNER: att.string_to_mich("\"FA2_NOT_OWNER\""),

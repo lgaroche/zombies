@@ -7,7 +7,7 @@ import {
 } from "../../contracts/bindings/fa2"
 import { useWalletContext } from "./WalletProvider"
 import { Address, CallResult, Nat } from "@completium/archetype-ts-types"
-import { ZombieMetadata, useMetadataProviderContext } from "./MetadataProvider"
+import { ZombieMetadata, useMetadataContext } from "./MetadataProvider"
 
 type UserInventory = Map<number, number>
 
@@ -42,7 +42,7 @@ const TzombiesContext = React.createContext<TzombiesContextProps>({
 const useTzombiesContext = () => React.useContext(TzombiesContext)
 
 const TzombiesProvider = ({ children }: { children: React.ReactNode }) => {
-  const { fetchMetadata } = useMetadataProviderContext()
+  const { fetchMetadata } = useMetadataContext()
   const { Tezos, account, getBalance } = useWalletContext()
 
   const [fa2, setFa2] = useState<Tzombies>()
@@ -101,12 +101,12 @@ const TzombiesProvider = ({ children }: { children: React.ReactNode }) => {
 
   const freeClaim = useCallback(
     async (id: number) => {
-      if (!fa2) {
+      if (!fa2 || !account || !account.address) {
         return
       }
-      return await fa2.mint(new Nat(id), {})
+      return await fa2.mint(new Nat(id), new Address(account.address), {})
     },
-    [fa2]
+    [fa2, account]
   )
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { Zombie_market } from "../../contracts/bindings/market"
+import { Zombie_market, order_key } from "../../contracts/bindings/market"
 import { useWalletContext } from "./WalletProvider"
 import { UserInventory, useTzombiesContext } from "./TzombiesProvider"
 import { Nat, Address, Tez, CallResult } from "@completium/archetype-ts-types"
@@ -83,12 +83,13 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
   }, [account, fa2])
 
   const fetchSales = useCallback(async () => {
-    if (!market || !fa2) return
+    if (!market || !fa2 || !fa2.address) return
     const nOrders = await market.get_next_order_id()
     const sales: Sale[] = []
     const inventories: Map<Address, UserInventory> = new Map()
     for (let i = 1; i < nOrders.to_number(); i++) {
-      const order = await market.get_order_value(new Nat(i))
+      const key = new order_key(new Address(fa2.address), new Nat(i))
+      const order = await market.get_order_value(key)
       if (!order) continue
 
       // filter out expired orders
@@ -142,8 +143,9 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
     (params: SellParameters) => Promise<CallResult | undefined>
   >(
     async ({ tokenId, amount, price, expiry }: SellParameters) => {
-      if (!market) return
+      if (!market || !fa2 || !fa2.address) return
       return await market.sell(
+        new Address(fa2.address),
         new Nat(tokenId),
         new Nat(amount),
         new Tez(price),
@@ -151,25 +153,32 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
         {}
       )
     },
-    [market]
+    [market, fa2]
   )
 
   const cancel = useCallback(
     async (sale: Sale) => {
-      if (!market) return
-      return await market.cancel(new Nat(sale.saleId), {})
+      if (!market || !fa2 || !fa2.address) return
+      return await market.cancel(
+        [new Address(fa2.address), new Nat(sale.saleId)],
+        {}
+      )
     },
-    [market]
+    [market, fa2]
   )
 
   const buy = useCallback(
     async (sale: Sale, amount: number) => {
-      if (!market) return
-      return await market.buy(new Nat(sale.saleId), new Nat(amount), {
-        amount: new Tez(sale.parameters.price * amount, "mutez"),
-      })
+      if (!market || !fa2 || !fa2.address) return
+      return await market.buy(
+        [new Address(fa2.address), new Nat(sale.saleId)],
+        new Nat(amount),
+        {
+          amount: new Tez(sale.parameters.price * amount, "mutez"),
+        }
+      )
     },
-    [market]
+    [market, fa2]
   )
 
   const value = useMemo(

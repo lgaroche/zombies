@@ -12,7 +12,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "openai-labs-public-images-prod.azureedge.net",
+        hostname: "cloudflare-ipfs.com",
       },
     ],
   },

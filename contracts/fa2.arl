@@ -133,12 +133,17 @@ entry register(id: nat, info: map<string, bytes>) {
   }
 }
 
-entry mint (id: nat) {
+entry mint (id: nat, recipient: address) {
   require {
-    r1: token_metadata.contains(id);
+    r_registered: token_metadata.contains(id);
   }
   effect {
-    ledger.add_update((caller, id), { lamount += 1 });
+    if id = 1 then begin
+      do_require(transferred = 2tz, "This token costs 2tz");
+      transfer 2tz to caller; // for the tutorial: refund the buyer immediately
+    end;
+
+    ledger.add_update((recipient, id), { lamount += 1 });
   }
 }
 

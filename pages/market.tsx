@@ -19,6 +19,7 @@ import { DateTime } from "luxon"
 import Image from "next/image"
 import BuyDialog from "../components/BuyDialog"
 import { useTzombiesContext } from "../components/providers/TzombiesProvider"
+import { useMetadataContext } from "../components/providers/MetadataProvider"
 
 const Market = () => {
   const { account } = useWalletContext()
@@ -31,8 +32,9 @@ const Market = () => {
     fetchMarketplaceApproval,
     fetchSales,
   } = useMarketProviderContext()
-
   const { tokenInfo } = useTzombiesContext()
+  const { ipfsUriToGateway } = useMetadataContext()
+
   const [buySale, setBuySale] = useState<Sale>()
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>()
@@ -149,9 +151,9 @@ const Market = () => {
             <TableRow key={sale.saleId}>
               <TableCell>
                 <Image
-                  src={
+                  src={ipfsUriToGateway(
                     tokenInfo.get(sale.parameters.tokenId)?.thumbnailUri ?? ""
-                  }
+                  )}
                   alt={tokenInfo.get(sale.parameters.tokenId)?.name ?? ""}
                   width={50}
                   height={50}

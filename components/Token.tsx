@@ -5,6 +5,7 @@ import CardContent from "@mui/material/CardContent"
 import CardMedia from "@mui/material/CardMedia"
 import { Grid } from "@mui/material"
 import { useTzombiesContext } from "./providers/TzombiesProvider"
+import { useMetadataContext } from "./providers/MetadataProvider"
 
 interface TokenProps {
   id: number
@@ -20,15 +21,14 @@ const TokenContent = ({
   extra?: React.ReactNode
 }) => {
   const { tokenInfo } = useTzombiesContext()
+  const { ipfsUriToGateway } = useMetadataContext()
   if (!tokenInfo.has(id)) return <React.Fragment />
   return (
     <>
       <CardMedia
         component="img"
         height="200"
-        image={tokenInfo
-          .get(id)
-          ?.displayUri.replace("ipfs://", "https://cloudflare-ipfs.com/ipfs/")}
+        image={ipfsUriToGateway(tokenInfo.get(id)?.displayUri ?? "")}
       />
       <CardContent>
         {tokenInfo.get(id)?.name}

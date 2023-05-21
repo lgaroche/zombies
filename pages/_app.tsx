@@ -18,6 +18,7 @@ import { TzombiesProvider } from "../components/providers/TzombiesProvider"
 import { MarketProvider } from "../components/providers/MarketProvider"
 import { LocalizationProvider } from "@mui/x-date-pickers"
 import { MetadataProvider } from "../components/providers/MetadataProvider"
+import { WertProvider } from "../components/providers/WertProvider"
 
 export default function App({ Component, pageProps }: AppProps) {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)")
@@ -39,12 +40,14 @@ export default function App({ Component, pageProps }: AppProps) {
         <MetadataProvider>
           <TzombiesProvider>
             <MarketProvider>
-              <LocalizationProvider dateAdapter={AdapterLuxon}>
-                <NavBar />
-                <Container sx={{ mt: 12 }}>
-                  <Component {...pageProps} />
-                </Container>
-              </LocalizationProvider>
+              <WertProvider>
+                <LocalizationProvider dateAdapter={AdapterLuxon}>
+                  <NavBar />
+                  <Container sx={{ mt: 12 }}>
+                    <Component {...pageProps} />
+                  </Container>
+                </LocalizationProvider>
+              </WertProvider>
             </MarketProvider>
           </TzombiesProvider>
         </MetadataProvider>

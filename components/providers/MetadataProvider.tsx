@@ -12,35 +12,38 @@ interface ZombieMetadata {
 
 interface MetadataProviderContextProps {
   fetchMetadata: (tokenInfo: string) => Promise<ZombieMetadata>
+  ipfsUriToGateway: (ipfsUri: string) => string
 }
 
-const MetadataProviderContext = createContext<MetadataProviderContextProps>({
+const ipfsUriToGateway = (ipfsUri: string) =>
+  ipfsUri.replace("ipfs://", "https://cloudflare-ipfs.com/ipfs/")
+
+const MetadataContext = createContext<MetadataProviderContextProps>({
   fetchMetadata: function (tokenInfo: string): Promise<ZombieMetadata> {
     throw new Error("Function not implemented.")
   },
+  ipfsUriToGateway,
 })
 
-const useMetadataProviderContext = () => useContext(MetadataProviderContext)
+const useMetadataContext = () => useContext(MetadataContext)
 
 const MetadataProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchMetadata = useCallback(async (tokenInfo: string) => {
     if (!tokenInfo.startsWith("ipfs://")) {
       throw new Error("Invalid tokenInfo")
     }
-    const res = await fetch(
-      tokenInfo.replace("ipfs://", "https://cloudflare-ipfs.com/ipfs/")
-    )
+    const res = await fetch(ipfsUriToGateway(tokenInfo))
     const metadata = await res.json()
     console.log(metadata)
     return metadata
   }, [])
 
   return (
-    <MetadataProviderContext.Provider value={{ fetchMetadata }}>
+    <MetadataContext.Provider value={{ fetchMetadata, ipfsUriToGateway }}>
       {children}
-    </MetadataProviderContext.Provider>
+    </MetadataContext.Provider>
   )
 }
 
-export { MetadataProvider, useMetadataProviderContext }
+export { MetadataProvider, useMetadataContext }
 export type { ZombieMetadata }
