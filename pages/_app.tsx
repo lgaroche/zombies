@@ -17,6 +17,7 @@ import { WalletProvider } from "../components/providers/WalletProvider"
 import { TzombiesProvider } from "../components/providers/TzombiesProvider"
 import { MarketProvider } from "../components/providers/MarketProvider"
 import { LocalizationProvider } from "@mui/x-date-pickers"
+import { MetadataProvider } from "../components/providers/MetadataProvider"
 
 export default function App({ Component, pageProps }: AppProps) {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)")
@@ -35,16 +36,18 @@ export default function App({ Component, pageProps }: AppProps) {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <WalletProvider>
-        <TzombiesProvider>
-          <MarketProvider>
-            <LocalizationProvider dateAdapter={AdapterLuxon}>
-              <NavBar />
-              <Container sx={{ mt: 12 }}>
-                <Component {...pageProps} />
-              </Container>
-            </LocalizationProvider>
-          </MarketProvider>
-        </TzombiesProvider>
+        <MetadataProvider>
+          <TzombiesProvider>
+            <MarketProvider>
+              <LocalizationProvider dateAdapter={AdapterLuxon}>
+                <NavBar />
+                <Container sx={{ mt: 12 }}>
+                  <Component {...pageProps} />
+                </Container>
+              </LocalizationProvider>
+            </MarketProvider>
+          </TzombiesProvider>
+        </MetadataProvider>
       </WalletProvider>
     </ThemeProvider>
   )

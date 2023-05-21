@@ -7,6 +7,7 @@ import {
 } from "../../contracts/bindings/fa2"
 import { useWalletContext } from "./WalletProvider"
 import { Address, CallResult, Nat } from "@completium/archetype-ts-types"
+import { ZombieMetadata, useMetadataProviderContext } from "./MetadataProvider"
 
 type UserInventory = Map<number, number>
 
@@ -17,44 +18,60 @@ interface TransferParameters {
 }
 interface TzombiesContextProps {
   fa2?: Tzombies
+  tokenInfo: Map<number, ZombieMetadata>
   inventory: Map<number, number>
   transfer: (params: TransferParameters) => Promise<CallResult | undefined>
+  freeClaim: (id: number) => Promise<CallResult | undefined>
   fetchInventory: () => void
   fetchFa2Balance: (address: Address) => Promise<UserInventory>
 }
 
 const TzombiesContext = React.createContext<TzombiesContextProps>({
   inventory: new Map(),
+  tokenInfo: new Map(),
   transfer: async () => {
     throw new Error("TzombiesContext not initialized")
   },
   fetchInventory: () => {},
   fetchFa2Balance: async () => new Map(),
+  freeClaim: function (id: number): Promise<CallResult | undefined> {
+    throw new Error("Function not implemented.")
+  },
 })
 
 const useTzombiesContext = () => React.useContext(TzombiesContext)
 
 const TzombiesProvider = ({ children }: { children: React.ReactNode }) => {
-  const [fa2, setFa2] = useState<Tzombies>()
+  const { fetchMetadata } = useMetadataProviderContext()
   const { Tezos, account, getBalance } = useWalletContext()
-  const [registered, setRegistered] = useState<Nat[]>([])
+
+  const [fa2, setFa2] = useState<Tzombies>()
+  const [registeredTokenInfo, setRegisteredTokenInfo] = useState<
+    Map<number, ZombieMetadata>
+  >(new Map())
   const [inventory, setInventory] = useState<UserInventory>(new Map())
 
   const fetchFa2Balance = useCallback<
     (address: Address) => Promise<UserInventory>
   >(
     async (address: Address) => {
-      if (!fa2 || registered.length < 1) {
+      if (!fa2 || registeredTokenInfo.size < 1) {
         return new Map()
       }
       const inventory = new Map()
-      for (const id of registered) {
-        const value = await fa2.get_ledger_value(new ledger_key(address, id))
-        inventory.set(id.to_number(), value?.to_number() || 0)
+      for (const [id, _] of registeredTokenInfo) {
+        try {
+          const value = await fa2.get_ledger_value(
+            new ledger_key(address, new Nat(id))
+          )
+          inventory.set(id, value?.to_number() ?? 0)
+        } catch (e) {
+          console.error(e)
+        }
       }
       return inventory
     },
-    [fa2, registered]
+    [fa2, registeredTokenInfo]
   )
 
   const fetchInventory = useCallback(async () => {
@@ -82,6 +99,16 @@ const TzombiesProvider = ({ children }: { children: React.ReactNode }) => {
     [account, fa2]
   )
 
+  const freeClaim = useCallback(
+    async (id: number) => {
+      if (!fa2) {
+        return
+      }
+      return await fa2.mint(new Nat(id), {})
+    },
+    [fa2]
+  )
+
   useEffect(() => {
     if (!Tezos) {
       return
@@ -93,8 +120,22 @@ const TzombiesProvider = ({ children }: { children: React.ReactNode }) => {
     if (!fa2) {
       return
     }
-    fa2.get_registered().then(setRegistered)
-  }, [fa2])
+    const fetchRegisteredTokens = async () => {
+      const tokenInfo = new Map()
+      const registered = await fa2.get_registered()
+      for (const id of registered) {
+        const value = await fa2.get_token_metadata_value(id)
+        const b = value?.token_info.find((info) => info[0] === "")
+        if (!b || b.length < 2) continue
+        const info = b[1].hex_decode()
+        const metadata = await fetchMetadata(info)
+        tokenInfo.set(id.to_number(), metadata)
+      }
+      console.log(tokenInfo)
+      setRegisteredTokenInfo(tokenInfo)
+    }
+    fetchRegisteredTokens()
+  }, [fa2, fetchMetadata])
 
   useEffect(() => {
     fetchInventory()
@@ -104,11 +145,21 @@ const TzombiesProvider = ({ children }: { children: React.ReactNode }) => {
     () => ({
       fa2,
       inventory,
+      tokenInfo: registeredTokenInfo,
       transfer,
+      freeClaim,
       fetchInventory,
       fetchFa2Balance,
     }),
-    [fa2, inventory, transfer, fetchInventory, fetchFa2Balance]
+    [
+      fa2,
+      inventory,
+      registeredTokenInfo,
+      transfer,
+      freeClaim,
+      fetchInventory,
+      fetchFa2Balance,
+    ]
   )
 
   return (

@@ -5,11 +5,9 @@ import { UserInventory, useTzombiesContext } from "./TzombiesProvider"
 import { Nat, Address, Tez, CallResult } from "@completium/archetype-ts-types"
 import {
   add_for_all,
-  balance_of_request,
   operator_for_all_key,
   remove_for_all,
 } from "../../contracts/bindings/fa2"
-import { type } from "os"
 
 interface MarketProviderContextProps {
   market?: Zombie_market
@@ -103,7 +101,7 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
       const amount = inventories
         .get(order.seller)
         ?.get(order.token_id.to_number())
-      const qty = Math.min(order.amount.to_number(), amount || 0)
+      const qty = Math.min(order.amount.to_number(), amount ?? 0)
       if (qty < 1) continue
 
       sales.push({

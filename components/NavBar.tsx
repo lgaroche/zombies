@@ -87,8 +87,12 @@ const NavBar = () => {
         <Toolbar disableGutters sx={{ display: { xs: "flex", sm: "none" } }}>
           <ClickAwayListener onClickAway={handleClickAway}>
             <Box>
-              <Button onClick={handleMenuClick} sx={{ display: "block" }}>
-                <MenuIcon />
+              <Button
+                onClick={handleMenuClick}
+                sx={{ color: "white" }}
+                startIcon={<MenuIcon />}
+              >
+                Menu
               </Button>
               {menuOpen && <Menu />}
             </Box>

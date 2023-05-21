@@ -2,9 +2,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
   InputAdornment,
   DialogActions,
   Button,
@@ -28,11 +25,13 @@ interface SaleDialogProps {
 const SaleDialog = ({ id, onClose }: SaleDialogProps) => {
   const { sell } = useMarketProviderContext()
   const { inventory } = useTzombiesContext()
+  const { fetchSales } = useMarketProviderContext()
   const [amount, setAmount] = useState<number>(1)
   const [price, setPrice] = useState<number>(10)
   const [expiry, setExpiry] = useState<DateTime | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
   const [opHash, setOpHash] = useState<string>()
+  const [error, setError] = useState<string>()
 
   const handleSell = useCallback(
     async (tokenId: number) => {
@@ -48,14 +47,16 @@ const SaleDialog = ({ id, onClose }: SaleDialogProps) => {
         if (res) {
           setOpHash(res.operation_hash)
           onClose()
+          fetchSales()
         }
       } catch (e: any) {
         console.error(e)
+        setError(e.message ?? JSON.stringify(e))
       } finally {
         setLoading(false)
       }
     },
-    [price, amount, sell, expiry, onClose]
+    [expiry, sell, amount, price, onClose, fetchSales]
   )
 
   const expiryValid = expiry && expiry.diffNow().toMillis() > 0
@@ -65,6 +66,10 @@ const SaleDialog = ({ id, onClose }: SaleDialogProps) => {
       <Snackbar open={!!opHash} onClose={() => setOpHash(undefined)}>
         <Alert severity={"success"}>Sale: {opHash}</Alert>
       </Snackbar>
+      <Snackbar open={!!error} onClose={() => setError(undefined)}>
+        <Alert severity={"error"}>Error: {error}</Alert>
+      </Snackbar>
+
       <Dialog open={id > 0} onClose={onClose}>
         <DialogTitle>Sell item</DialogTitle>
         <DialogContent>
@@ -98,7 +103,7 @@ const SaleDialog = ({ id, onClose }: SaleDialogProps) => {
             inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
             value={amount}
             onChange={({ target }) =>
-              setAmount(Math.floor(parseInt(target.value)) || 0)
+              setAmount(Math.floor(parseInt(target.value)) ?? 0)
             }
           />
 

@@ -13,9 +13,9 @@ import { BeaconWallet } from "@taquito/beacon-wallet"
 import { set_binder_tezos_toolkit } from "@completium/dapp-ts"
 
 interface WalletContextProps {
-  connect: () => void
-  disconnect: () => void
-  getBalance: () => void
+  connect: () => Promise<void>
+  disconnect: () => Promise<void>
+  getBalance: () => Promise<void>
   account?: AccountInfo
   wallet?: BeaconWallet
   Tezos?: TezosToolkit
@@ -23,9 +23,9 @@ interface WalletContextProps {
 }
 
 const WalletContext = createContext<WalletContextProps>({
-  connect: () => {},
-  disconnect: () => {},
-  getBalance: () => {},
+  connect: async () => {},
+  disconnect: async () => {},
+  getBalance: async () => {},
   balance: 0,
 })
 
@@ -44,7 +44,7 @@ const WalletProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!Tezos) {
       const Tezos = new TezosToolkit(
-        process.env.NEXT_PUBLIC_TEZOS_RPC || "http://localhost:8732"
+        process.env.NEXT_PUBLIC_TEZOS_RPC ?? "http://localhost:8732"
       )
       const beacon = new BeaconWallet({
         name: "TZombies",
@@ -64,7 +64,7 @@ const WalletProvider = ({ children }: { children: ReactNode }) => {
     try {
       await wallet?.requestPermissions({
         network: {
-          type: (process.env.NEXT_PUBLIC_NETWORK || "ghostnet") as NetworkType,
+          type: (process.env.NEXT_PUBLIC_NETWORK ?? "ghostnet") as NetworkType,
           rpcUrl: process.env.NEXT_PUBLIC_TEZOS_RPC,
         },
       })

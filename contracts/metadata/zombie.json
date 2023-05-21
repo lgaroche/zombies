@@ -1,0 +1,26 @@
+{
+  "name": "TZombie",
+  "description": "A deadly undead creature",
+  "artifactUri": "ipfs://QmehW5o2t2ZGUoHBYqdFbozGEWSSGrNBtcPcocaLXPpxbY",
+  "displayUri": "ipfs://QmehW5o2t2ZGUoHBYqdFbozGEWSSGrNBtcPcocaLXPpxbY",
+  "thumbnailUri": "ipfs://QmehW5o2t2ZGUoHBYqdFbozGEWSSGrNBtcPcocaLXPpxbY",
+  "symbol": "",
+  "tags": ["tezos", "tutorial"],
+  "creators": [],
+  "formats": [
+    {
+      "uri": "ipfs://QmehW5o2t2ZGUoHBYqdFbozGEWSSGrNBtcPcocaLXPpxbY",
+      "mimeType": "image/png"
+    }
+  ],
+  "decimals": 0,
+  "isBooleanAmount": false,
+  "shouldPreferSymbol": false,
+  "attributes": [
+    {
+      "name": "Alive",
+      "value": false,
+      "type": "boolean"
+    }
+  ]
+}

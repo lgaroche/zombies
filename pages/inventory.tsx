@@ -1,4 +1,4 @@
-import { Button, Chip, Paper, Typography } from "@mui/material"
+import { Alert, Button, Chip, Paper, Snackbar, Typography } from "@mui/material"
 import React, { useCallback, useState } from "react"
 import SellOutlinedIcon from "@mui/icons-material/SellOutlined"
 import SendIcon from "@mui/icons-material/Send"
@@ -18,20 +18,16 @@ const Inventory = () => {
 
   const [saleFormOpen, setSaleFormOpen] = useState<number>()
   const [transferFormOpen, setTransferFormOpen] = useState<number>()
+  const [error, setError] = useState<string>()
 
   const handleRefresh = useCallback(() => {
-    getBalance()
-    fetchInventory()
+    try {
+      getBalance()
+      fetchInventory()
+    } catch (e: any) {
+      console.error(e)
+    }
   }, [getBalance, fetchInventory])
-
-  const SellButton = useCallback(
-    (id: number) => (
-      <Button onClick={() => setSaleFormOpen(id)} disabled={!isApproved}>
-        Sell
-      </Button>
-    ),
-    [setSaleFormOpen, isApproved]
-  )
 
   const Actions = useCallback(
     (id: number) => (
@@ -66,18 +62,22 @@ const Inventory = () => {
       <Typography variant="h4">Your inventory</Typography>
       <Button onClick={handleRefresh}>Refresh</Button>
 
+      <Snackbar open={!!error} onClose={() => setError(undefined)}>
+        <Alert severity={"error"}>Error: {error}</Alert>
+      </Snackbar>
+
       <Paper sx={{ p: 2, my: 2 }}>
         <Typography variant="h5">Balance</Typography>
         <Typography variant="h6">{balance} ꜩ</Typography>
       </Paper>
 
       <SaleDialog
-        id={saleFormOpen || 0}
+        id={saleFormOpen ?? 0}
         onClose={() => setSaleFormOpen(undefined)}
       />
 
       <TransferDialog
-        id={transferFormOpen || 0}
+        id={transferFormOpen ?? 0}
         onClose={() => setTransferFormOpen(undefined)}
       />
 

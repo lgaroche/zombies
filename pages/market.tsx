@@ -1,6 +1,7 @@
 import {
+  Alert,
   Button,
-  Dialog,
+  Snackbar,
   Table,
   TableBody,
   TableCell,
@@ -16,8 +17,8 @@ import {
 } from "../components/providers/MarketProvider"
 import { DateTime } from "luxon"
 import Image from "next/image"
-import { images } from "../components/Token"
 import BuyDialog from "../components/BuyDialog"
+import { useTzombiesContext } from "../components/providers/TzombiesProvider"
 
 const Market = () => {
   const { account } = useWalletContext()
@@ -31,12 +32,22 @@ const Market = () => {
     fetchSales,
   } = useMarketProviderContext()
 
+  const { tokenInfo } = useTzombiesContext()
   const [buySale, setBuySale] = useState<Sale>()
   const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string>()
 
   const handleApprove = useCallback(async () => {
-    await approve()
-    await fetchMarketplaceApproval()
+    try {
+      setLoading(true)
+      await approve()
+      await fetchMarketplaceApproval()
+    } catch (e: any) {
+      console.error(e)
+      setError(e.message ?? JSON.stringify(e))
+    } finally {
+      setLoading(false)
+    }
   }, [approve, fetchMarketplaceApproval])
 
   const handleRevoke = useCallback(async () => {
@@ -44,14 +55,25 @@ const Market = () => {
     try {
       await revoke()
       await fetchMarketplaceApproval()
+    } catch (e: any) {
+      console.error(e)
+      setError(e.message ?? JSON.stringify(e))
     } finally {
       setLoading(false)
     }
   }, [revoke, fetchMarketplaceApproval])
 
   const handleRefresh = useCallback(async () => {
-    await fetchMarketplaceApproval()
-    await fetchSales()
+    setLoading(true)
+    try {
+      await fetchMarketplaceApproval()
+      await fetchSales()
+    } catch (e: any) {
+      console.error(e)
+      setError(e.message ?? JSON.stringify(e))
+    } finally {
+      setLoading(false)
+    }
   }, [fetchMarketplaceApproval, fetchSales])
 
   const handleCancel = useCallback(
@@ -60,6 +82,9 @@ const Market = () => {
       try {
         await cancel(sale)
         await fetchSales()
+      } catch (e: any) {
+        console.error(e)
+        setError(e.message ?? JSON.stringify(e))
       } finally {
         setLoading(false)
       }
@@ -69,6 +94,10 @@ const Market = () => {
 
   return (
     <>
+      <Snackbar open={!!error} onClose={() => setError(undefined)}>
+        <Alert severity={"error"}>Error: {error}</Alert>
+      </Snackbar>
+
       <Typography variant="h4">Marketplace</Typography>
       <Button onClick={handleRefresh}>Refresh</Button>
       {isApproved ? (
@@ -85,7 +114,7 @@ const Market = () => {
         <>
           <p>ℹ️ The marketplace contract needs to be an approved operator</p>
           <Button
-            disabled={!account}
+            disabled={!account || loading}
             variant="contained"
             onClick={handleApprove}
           >
@@ -106,9 +135,11 @@ const Market = () => {
         <TableHead>
           <TableRow>
             <TableCell>Token</TableCell>
-            <TableCell>Quantity</TableCell>
+            <TableCell>Qty</TableCell>
             <TableCell>Price</TableCell>
-            <TableCell>Seller</TableCell>
+            <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
+              Seller
+            </TableCell>
             <TableCell>Expiry</TableCell>
             <TableCell>Actions</TableCell>
           </TableRow>
@@ -118,15 +149,17 @@ const Market = () => {
             <TableRow key={sale.saleId}>
               <TableCell>
                 <Image
-                  src={images[sale.parameters.tokenId % 2]}
-                  alt={`token #${sale.parameters.tokenId}`}
+                  src={
+                    tokenInfo.get(sale.parameters.tokenId)?.thumbnailUri ?? ""
+                  }
+                  alt={tokenInfo.get(sale.parameters.tokenId)?.name ?? ""}
                   width={50}
                   height={50}
                 />
               </TableCell>
               <TableCell>{sale.parameters.amount}</TableCell>
               <TableCell>{sale.parameters.price / 1_000_000} ꜩ</TableCell>
-              <TableCell>
+              <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
                 {sale.seller.toString() === account?.address
                   ? "you"
                   : sale.seller.toString()}
@@ -136,11 +169,19 @@ const Market = () => {
               </TableCell>
               <TableCell>
                 {sale.seller.toString() !== account?.address ? (
-                  <Button variant="outlined" onClick={() => setBuySale(sale)}>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setBuySale(sale)}
+                    disabled={loading}
+                  >
                     Buy
                   </Button>
                 ) : (
-                  <Button variant="text" onClick={() => handleCancel(sale)}>
+                  <Button
+                    variant="text"
+                    onClick={() => handleCancel(sale)}
+                    disabled={loading}
+                  >
                     Cancel
                   </Button>
                 )}

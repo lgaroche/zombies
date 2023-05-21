@@ -4,6 +4,7 @@ import CardActions from "@mui/material/CardActions"
 import CardContent from "@mui/material/CardContent"
 import CardMedia from "@mui/material/CardMedia"
 import { Grid } from "@mui/material"
+import { useTzombiesContext } from "./providers/TzombiesProvider"
 
 interface TokenProps {
   id: number
@@ -11,27 +12,31 @@ interface TokenProps {
   extra?: React.ReactNode
 }
 
-const images = [
-  "https://openai-labs-public-images-prod.azureedge.net/user-CahPgAlHwKFnBxFuXmjpkw22/generations/generation-ry5oi5BCBGmMHO1x3fIjl1Me/image.webp",
-  "https://openai-labs-public-images-prod.azureedge.net/user-CahPgAlHwKFnBxFuXmjpkw22/generations/generation-SsCT87aCFDaX6jADsUThlicN/image.webp",
-]
-
 const TokenContent = ({
   id,
   extra,
 }: {
   id: number
   extra?: React.ReactNode
-}) => (
-  <>
-    <CardMedia component="img" height="200" image={images[id % 2]} />
-    <CardContent>
-      Tzombie&nbsp;
-      {<span>#{id}</span>}
-      {extra}
-    </CardContent>
-  </>
-)
+}) => {
+  const { tokenInfo } = useTzombiesContext()
+  if (!tokenInfo.has(id)) return <React.Fragment />
+  return (
+    <>
+      <CardMedia
+        component="img"
+        height="200"
+        image={tokenInfo
+          .get(id)
+          ?.displayUri.replace("ipfs://", "https://cloudflare-ipfs.com/ipfs/")}
+      />
+      <CardContent>
+        {tokenInfo.get(id)?.name}
+        {extra}
+      </CardContent>
+    </>
+  )
+}
 
 const Token = ({ id, actions, extra }: TokenProps) => {
   return (
@@ -63,4 +68,4 @@ const TokenList = ({ tokens, actions, extra }: TokenListProps) => (
   </Grid>
 )
 
-export { Token, TokenList, TokenContent, images }
+export { Token, TokenList, TokenContent }

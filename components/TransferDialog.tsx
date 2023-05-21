@@ -8,7 +8,7 @@ import {
   Snackbar,
   TextField,
 } from "@mui/material"
-import React, { use, useCallback, useState } from "react"
+import React, { useCallback, useState } from "react"
 import { TokenContent } from "./Token"
 import { useTzombiesContext } from "./providers/TzombiesProvider"
 
@@ -23,6 +23,7 @@ const TransferDialog = ({ id, onClose }: TransferDialogProps) => {
   const [amount, setAmount] = useState<number>(1)
   const [opHash, setOpHash] = useState<string>()
   const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string>()
 
   const handleTransfer = useCallback(async () => {
     if (!id) return
@@ -36,6 +37,7 @@ const TransferDialog = ({ id, onClose }: TransferDialogProps) => {
       }
     } catch (e: any) {
       console.error(e)
+      setError(e.message ?? JSON.stringify(e))
     } finally {
       setLoading(false)
     }
@@ -46,6 +48,10 @@ const TransferDialog = ({ id, onClose }: TransferDialogProps) => {
       <Snackbar open={!!opHash} onClose={() => setOpHash(undefined)}>
         <Alert severity={"success"}>Sale: {opHash}</Alert>
       </Snackbar>
+      <Snackbar open={!!error} onClose={() => setError(undefined)}>
+        <Alert severity={"error"}>Error: {error}</Alert>
+      </Snackbar>
+
       <Dialog open={id > 0} onClose={onClose}>
         <DialogTitle>Transfer</DialogTitle>
         <DialogContent>
@@ -67,7 +73,7 @@ const TransferDialog = ({ id, onClose }: TransferDialogProps) => {
             value={amount}
             onChange={({ target }) =>
               setAmount(
-                Math.min(parseInt(target.value), inventory.get(id) || 0)
+                Math.min(parseInt(target.value), inventory.get(id) ?? 0)
               )
             }
           />

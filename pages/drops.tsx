@@ -1,41 +1,21 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useState } from "react"
 import { TokenList } from "../components/Token"
 import { Alert, Button, Snackbar, Typography } from "@mui/material"
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart"
-import { CallResult, Nat } from "@completium/archetype-ts-types"
+import { CallResult } from "@completium/archetype-ts-types"
 import { useTzombiesContext } from "../components/providers/TzombiesProvider"
-import { useWalletContext } from "../components/providers/WalletProvider"
 
 const Drops = () => {
   const [minted, setMinted] = useState<CallResult>()
-  const [registered, setRegistered] = useState<number[]>([])
-  const { Tezos } = useWalletContext()
-  const { fa2, fetchInventory } = useTzombiesContext()
+  const { freeClaim, fetchInventory, tokenInfo } = useTzombiesContext()
   const [loading, setLoading] = useState<boolean>(false)
-
-  useEffect(() => {
-    if (!fa2) {
-      return
-    }
-    const getRegistered = async () => {
-      const registered = await fa2.get_registered()
-      setRegistered(
-        registered.map((id) => id.to_number()).sort((a, b) => a - b)
-      )
-    }
-    getRegistered().catch((err) => {
-      console.error(err)
-    })
-  }, [fa2])
+  const [error, setError] = useState<string>()
 
   const handleClaim = useCallback(
     async (id: number) => {
-      if (!fa2 || !Tezos) {
-        return
-      }
       setLoading(true)
       try {
-        const result = await fa2.mint(new Nat(id), {})
+        const result = await freeClaim(id)
         setMinted(result)
         fetchInventory()
       } catch (e: any) {
@@ -44,7 +24,7 @@ const Drops = () => {
         setLoading(false)
       }
     },
-    [fetchInventory, fa2, Tezos]
+    [fetchInventory, freeClaim]
   )
 
   const ClaimButton = useCallback(
@@ -67,9 +47,12 @@ const Drops = () => {
       <Snackbar open={!!minted} onClose={() => setMinted(undefined)}>
         <Alert severity={"success"}>Minted in {minted?.operation_hash}</Alert>
       </Snackbar>
+      <Snackbar open={!!error} onClose={() => setError(undefined)}>
+        <Alert severity={"error"}>Error: {error}</Alert>
+      </Snackbar>
       <Typography variant="h4">Drops</Typography>
       <TokenList
-        tokens={registered}
+        tokens={[...tokenInfo?.keys()] ?? []}
         actions={ClaimButton}
         onClick={(id) => handleClaim(id)}
         extra={Extra}

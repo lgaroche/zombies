@@ -5,14 +5,8 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
-  FormLabel,
-  InputAdornment,
-  InputLabel,
-  OutlinedInput,
   Snackbar,
   TextField,
-  Typography,
 } from "@mui/material"
 import React, { useCallback, useEffect, useState } from "react"
 import { Sale, useMarketProviderContext } from "./providers/MarketProvider"
@@ -30,6 +24,7 @@ const BuyDialog = ({ sale, onClose }: BuyDialogProps) => {
   const [quantity, setQuantity] = useState<number>(1)
   const [txId, setTxId] = useState<string>()
   const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string>()
 
   const handleBuy = useCallback(async () => {
     if (!sale) return
@@ -43,6 +38,7 @@ const BuyDialog = ({ sale, onClose }: BuyDialogProps) => {
       onClose()
     } catch (e: any) {
       console.error(e)
+      setError(e.message ?? JSON.stringify(e))
     } finally {
       setLoading(false)
     }
@@ -59,6 +55,10 @@ const BuyDialog = ({ sale, onClose }: BuyDialogProps) => {
       <Snackbar open={!!txId} onClose={() => setTxId(undefined)}>
         <Alert severity={"success"}>Purchase: {txId}</Alert>
       </Snackbar>
+      <Snackbar open={!!error} onClose={() => setError(undefined)}>
+        <Alert severity={"error"}>Error: {error}</Alert>
+      </Snackbar>
+
       {sale && (
         <Dialog open={!!sale} onClose={onClose}>
           <DialogTitle>Buy a Zombie</DialogTitle>
