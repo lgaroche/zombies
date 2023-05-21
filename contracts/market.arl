@@ -42,6 +42,16 @@ entry sell(token_id_: nat, amount_: nat, price_: tez, expiry_: date) {
     
 }
 
+entry cancel(order_id: nat) {
+    require {
+        r_cancel_order: order.contains(order_id);
+        r_owner: order[order_id].seller = caller;
+    }
+    effect {
+        order.remove(order_id);
+    }
+}
+
 entry buy(order_id: nat, amount_: nat) {
     require {
         r_buy_amount: amount_ > 0;

@@ -17,6 +17,7 @@ import {
 import React, { useCallback, useEffect, useState } from "react"
 import { Sale, useMarketProviderContext } from "./providers/MarketProvider"
 import { TokenContent } from "./Token"
+import { useTzombiesContext } from "./providers/TzombiesProvider"
 
 interface BuyDialogProps {
   sale?: Sale
@@ -25,6 +26,7 @@ interface BuyDialogProps {
 
 const BuyDialog = ({ sale, onClose }: BuyDialogProps) => {
   const { buy } = useMarketProviderContext()
+  const { fetchInventory } = useTzombiesContext()
   const [quantity, setQuantity] = useState<number>(1)
   const [txId, setTxId] = useState<string>()
   const [loading, setLoading] = useState<boolean>(false)
@@ -36,6 +38,7 @@ const BuyDialog = ({ sale, onClose }: BuyDialogProps) => {
       const res = await buy(sale, quantity)
       if (res) {
         setTxId(res.operation_hash)
+        fetchInventory()
       }
       onClose()
     } catch (e: any) {
@@ -43,7 +46,7 @@ const BuyDialog = ({ sale, onClose }: BuyDialogProps) => {
     } finally {
       setLoading(false)
     }
-  }, [sale, buy, onClose, quantity])
+  }, [sale, buy, onClose, fetchInventory, quantity])
 
   useEffect(() => {
     if (sale) {

@@ -91,6 +91,9 @@ const sell_arg_to_mich = (token_id_: att.Nat, amount_: att.Nat, price_: att.Tez,
         att.date_to_mich(expiry_)
     ]);
 }
+const cancel_arg_to_mich = (order_id: att.Nat): att.Micheline => {
+    return order_id.to_mich();
+}
 const buy_arg_to_mich = (order_id: att.Nat, amount_: att.Nat): att.Micheline => {
     return att.pair_to_mich([
         order_id.to_mich(),
@@ -120,6 +123,12 @@ export class Zombie_market {
         }
         throw new Error("Contract not initialised");
     }
+    async cancel(order_id: att.Nat, params: Partial<ex.Parameters>): Promise<att.CallResult> {
+        if (this.address != undefined) {
+            return await ex.call(this.address, "cancel", cancel_arg_to_mich(order_id), params);
+        }
+        throw new Error("Contract not initialised");
+    }
     async buy(order_id: att.Nat, amount_: att.Nat, params: Partial<ex.Parameters>): Promise<att.CallResult> {
         if (this.address != undefined) {
             return await ex.call(this.address, "buy", buy_arg_to_mich(order_id, amount_), params);
@@ -129,6 +138,12 @@ export class Zombie_market {
     async get_sell_param(token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, expiry_: Date, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
         if (this.address != undefined) {
             return await ex.get_call_param(this.address, "sell", sell_arg_to_mich(token_id_, amount_, price_, expiry_), params);
+        }
+        throw new Error("Contract not initialised");
+    }
+    async get_cancel_param(order_id: att.Nat, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+        if (this.address != undefined) {
+            return await ex.get_call_param(this.address, "cancel", cancel_arg_to_mich(order_id), params);
         }
         throw new Error("Contract not initialised");
     }
@@ -183,6 +198,8 @@ export class Zombie_market {
         r_value: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_value\"")]),
         r_order: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_order\"")]),
         r_buy_amount: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_buy_amount\"")]),
+        r_owner: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_owner\"")]),
+        r_cancel_order: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_cancel_order\"")]),
         r_expiry: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_expiry\"")]),
         r_sell_amount: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_sell_amount\"")])
     };

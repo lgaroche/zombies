@@ -18,6 +18,7 @@ interface MarketProviderContextProps {
   approve: () => Promise<void>
   revoke: () => Promise<void>
   sell: (params: SellParameters) => Promise<CallResult | undefined>
+  cancel: (sale: Sale) => Promise<CallResult | undefined>
   buy: (sale: Sale, amount: number) => Promise<CallResult | undefined>
   fetchMarketplaceApproval: () => Promise<void>
   fetchSales: () => Promise<void>
@@ -29,6 +30,9 @@ const MarketProviderContext = React.createContext<MarketProviderContextProps>({
   approve: async () => {},
   revoke: async () => {},
   sell: async () => {
+    throw new Error("MarketProviderContext not initialized")
+  },
+  cancel: async () => {
     throw new Error("MarketProviderContext not initialized")
   },
   buy: async () => {
@@ -152,6 +156,14 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
     [market]
   )
 
+  const cancel = useCallback(
+    async (sale: Sale) => {
+      if (!market) return
+      return await market.cancel(new Nat(sale.saleId), {})
+    },
+    [market]
+  )
+
   const buy = useCallback(
     async (sale: Sale, amount: number) => {
       if (!market) return
@@ -170,6 +182,7 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
       approve,
       revoke,
       sell,
+      cancel,
       buy,
       fetchMarketplaceApproval,
       fetchSales,
@@ -181,6 +194,7 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
       approve,
       revoke,
       sell,
+      cancel,
       buy,
       fetchMarketplaceApproval,
       fetchSales,

@@ -26,11 +26,13 @@ const Market = () => {
     sales,
     approve,
     revoke,
+    cancel,
     fetchMarketplaceApproval,
     fetchSales,
   } = useMarketProviderContext()
 
   const [buySale, setBuySale] = useState<Sale>()
+  const [loading, setLoading] = useState<boolean>(false)
 
   const handleApprove = useCallback(async () => {
     await approve()
@@ -38,14 +40,32 @@ const Market = () => {
   }, [approve, fetchMarketplaceApproval])
 
   const handleRevoke = useCallback(async () => {
-    await revoke()
-    await fetchMarketplaceApproval()
+    setLoading(true)
+    try {
+      await revoke()
+      await fetchMarketplaceApproval()
+    } finally {
+      setLoading(false)
+    }
   }, [revoke, fetchMarketplaceApproval])
 
   const handleRefresh = useCallback(async () => {
     await fetchMarketplaceApproval()
     await fetchSales()
   }, [fetchMarketplaceApproval, fetchSales])
+
+  const handleCancel = useCallback(
+    async (sale: Sale) => {
+      setLoading(true)
+      try {
+        await cancel(sale)
+        await fetchSales()
+      } finally {
+        setLoading(false)
+      }
+    },
+    [cancel, fetchSales]
+  )
 
   return (
     <>
@@ -115,13 +135,15 @@ const Market = () => {
                 {DateTime.fromJSDate(sale.parameters.expiry).toRelative()}
               </TableCell>
               <TableCell>
-                <Button
-                  variant="outlined"
-                  onClick={() => setBuySale(sale)}
-                  disabled={sale.seller.toString() === account?.address}
-                >
-                  Buy
-                </Button>
+                {sale.seller.toString() !== account?.address ? (
+                  <Button variant="outlined" onClick={() => setBuySale(sale)}>
+                    Buy
+                  </Button>
+                ) : (
+                  <Button variant="text" onClick={() => handleCancel(sale)}>
+                    Cancel
+                  </Button>
+                )}
               </TableCell>
             </TableRow>
           ))}

@@ -48,7 +48,8 @@ const WalletProvider = ({ children }: { children: ReactNode }) => {
       )
       const beacon = new BeaconWallet({
         name: "TZombies",
-        preferredNetwork: NetworkType.GHOSTNET,
+        preferredNetwork: (process.env.NEXT_PUBLIC_NETWORK ||
+          "ghostnet") as NetworkType,
         colorMode: ColorMode.DARK,
       })
       Tezos.setWalletProvider(beacon)
@@ -63,7 +64,8 @@ const WalletProvider = ({ children }: { children: ReactNode }) => {
     try {
       await wallet?.requestPermissions({
         network: {
-          type: NetworkType.GHOSTNET,
+          type: (process.env.NEXT_PUBLIC_NETWORK || "ghostnet") as NetworkType,
+          rpcUrl: process.env.NEXT_PUBLIC_TEZOS_RPC,
         },
       })
       const active = await wallet?.client.getActiveAccount()
