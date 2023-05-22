@@ -51,7 +51,6 @@ const WalletProvider = ({ children }: { children: ReactNode }) => {
         preferredNetwork: (process.env.NEXT_PUBLIC_NETWORK ||
           "ghostnet") as NetworkType,
         colorMode: ColorMode.DARK,
-        disableDefaultEvents: true,
       })
       Tezos.setWalletProvider(beacon)
       set_binder_tezos_toolkit(Tezos)
