@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "bindings": "npx completium-cli generate binding-dapp-ts contracts/fa2.arl > ./contracts/fa2.ts"
+    "bindings": "npx completium-cli generate binding-dapp-ts fa2.arl --input-path ./contracts --output-path ./contracts/bindings"
   },
   "dependencies": {
     "@completium/dapp-ts": "0.1.11",
@@ -41,6 +41,7 @@
     "@types/react-dom": "18.2.0",
     "eslint": "8.41.0",
     "eslint-config-next": "13.4.3",
+    "mocha": "^10.2.0",
     "prettier": "2.7.1",
     "typescript": "5.0.4"
   }

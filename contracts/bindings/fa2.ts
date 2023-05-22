@@ -125,6 +125,23 @@ export class operator_param implements att.ArchetypeType {
         return new operator_param(att.Address.from_mich((input as att.Mpair).args[0]), att.Address.from_mich((att.pair_to_mich((input as att.Mpair as att.Mpair).args.slice(1, 3)) as att.Mpair).args[0]), att.Nat.from_mich((att.pair_to_mich((input as att.Mpair as att.Mpair).args.slice(1, 3)) as att.Mpair).args[1]));
     }
 }
+export class gasless_param implements att.ArchetypeType {
+    constructor(public transfer_params: Array<transfer_param>, public user_pk: att.Key, public user_sig: att.Signature) { }
+    toString(): string {
+        return JSON.stringify(this, null, 2);
+    }
+    to_mich(): att.Micheline {
+        return att.pair_to_mich([att.list_to_mich(this.transfer_params, x => {
+                return x.to_mich();
+            }), this.user_pk.to_mich(), this.user_sig.to_mich()]);
+    }
+    equals(v: gasless_param): boolean {
+        return att.micheline_equals(this.to_mich(), v.to_mich());
+    }
+    static from_mich(input: att.Micheline): gasless_param {
+        return new gasless_param(att.mich_to_list((input as att.Mpair).args[0], x => { return transfer_param.from_mich(x); }), att.Key.from_mich((input as att.Mpair).args[1]), att.Signature.from_mich((input as att.Mpair).args[2]));
+    }
+}
 export class balance_of_request implements att.ArchetypeType {
     constructor(public bo_owner: att.Address, public btoken_id: att.Nat) { }
     toString(): string {
@@ -178,6 +195,20 @@ export const operator_param_mich_type: att.MichelineType = att.pair_array_to_mic
         att.prim_annot_to_mich_type("address", ["%operator"]),
         att.prim_annot_to_mich_type("nat", ["%token_id"])
     ], [])
+], []);
+export const gasless_param_mich_type: att.MichelineType = att.pair_array_to_mich_type([
+    att.list_annot_to_mich_type(att.pair_array_to_mich_type([
+        att.prim_annot_to_mich_type("address", ["%from_"]),
+        att.list_annot_to_mich_type(att.pair_array_to_mich_type([
+            att.prim_annot_to_mich_type("address", ["%to_"]),
+            att.pair_array_to_mich_type([
+                att.prim_annot_to_mich_type("nat", ["%token_id"]),
+                att.prim_annot_to_mich_type("nat", ["%amount"])
+            ], [])
+        ], []), ["%txs"])
+    ], []), ["%transfer_params"]),
+    att.prim_annot_to_mich_type("key", ["%user_pk"]),
+    att.prim_annot_to_mich_type("signature", ["%user_sig"])
 ], []);
 export const balance_of_request_mich_type: att.MichelineType = att.pair_array_to_mich_type([
     att.prim_annot_to_mich_type("address", ["%owner"]),
@@ -345,6 +376,37 @@ export const operator_for_all_container_mich_type: att.MichelineType = att.pair_
     att.prim_annot_to_mich_type("address", ["%fa_oaddr"]),
     att.prim_annot_to_mich_type("address", ["%fa_oowner"])
 ], []), att.prim_annot_to_mich_type("unit", []), []);
+const declare_ownership_arg_to_mich = (candidate: att.Address): att.Micheline => {
+    return candidate.to_mich();
+}
+const claim_ownership_arg_to_mich = (): att.Micheline => {
+    return att.unit_mich;
+}
+const pause_arg_to_mich = (): att.Micheline => {
+    return att.unit_mich;
+}
+const unpause_arg_to_mich = (): att.Micheline => {
+    return att.unit_mich;
+}
+const set_metadata_arg_to_mich = (k: string, d: att.Option<att.Bytes>): att.Micheline => {
+    return att.pair_to_mich([
+        att.string_to_mich(k),
+        d.to_mich((x => { return x.to_mich(); }))
+    ]);
+}
+const set_token_metadata_arg_to_mich = (tid: att.Nat, tdata: Array<[
+    string,
+    att.Bytes
+]>): att.Micheline => {
+    return att.pair_to_mich([
+        tid.to_mich(),
+        att.list_to_mich(tdata, x => {
+            const x_key = x[0];
+            const x_value = x[1];
+            return att.elt_to_mich(att.string_to_mich(x_key), x_value.to_mich());
+        })
+    ]);
+}
 const update_operators_arg_to_mich = (upl: Array<update_op>): att.Micheline => {
     return att.list_to_mich(upl, x => {
         return x.to_mich();
@@ -355,28 +417,43 @@ const update_operators_for_all_arg_to_mich = (upl: Array<update_for_all_op>): at
         return x.to_mich();
     });
 }
+const do_transfer_arg_to_mich = (txs: Array<transfer_param>): att.Micheline => {
+    return att.list_to_mich(txs, x => {
+        return x.to_mich();
+    });
+}
+const transfer_gasless_arg_to_mich = (batch: Array<gasless_param>): att.Micheline => {
+    return att.list_to_mich(batch, x => {
+        return x.to_mich();
+    });
+}
 const transfer_arg_to_mich = (txs: Array<transfer_param>): att.Micheline => {
     return att.list_to_mich(txs, x => {
         return x.to_mich();
     });
 }
-const register_arg_to_mich = (id: att.Nat, info: Array<[
-    string,
-    att.Bytes
-]>): att.Micheline => {
+const mint_arg_to_mich = (tow: att.Address, tid: att.Nat, nbt: att.Nat): att.Micheline => {
     return att.pair_to_mich([
-        id.to_mich(),
-        att.list_to_mich(info, x => {
-            const x_key = x[0];
-            const x_value = x[1];
-            return att.elt_to_mich(att.string_to_mich(x_key), x_value.to_mich());
-        })
+        tow.to_mich(),
+        tid.to_mich(),
+        nbt.to_mich()
     ]);
 }
-const mint_arg_to_mich = (id: att.Nat, recipient: att.Address): att.Micheline => {
+const burn_arg_to_mich = (tid: att.Nat, nbt: att.Nat): att.Micheline => {
     return att.pair_to_mich([
-        id.to_mich(),
-        recipient.to_mich()
+        tid.to_mich(),
+        nbt.to_mich()
+    ]);
+}
+const permit_transfer_arg_to_mich = (txs: Array<transfer_param>, permit: att.Option<[
+    att.Key,
+    att.Signature
+]>): att.Micheline => {
+    return att.pair_to_mich([
+        att.list_to_mich(txs, x => {
+            return x.to_mich();
+        }),
+        permit.to_mich((x => { return att.pair_to_mich([x[0].to_mich(), x[1].to_mich()]); }))
     ]);
 }
 const balance_of_arg_to_mich = (requests: Array<balance_of_request>): att.Micheline => {
@@ -411,6 +488,45 @@ export class Tzombies {
         }
         throw new Error("Contract not initialised");
     }
+    async declare_ownership(candidate: att.Address, params: Partial<ex.Parameters>): Promise<att.CallResult> {
+        if (this.address != undefined) {
+            return await ex.call(this.address, "declare_ownership", declare_ownership_arg_to_mich(candidate), params);
+        }
+        throw new Error("Contract not initialised");
+    }
+    async claim_ownership(params: Partial<ex.Parameters>): Promise<att.CallResult> {
+        if (this.address != undefined) {
+            return await ex.call(this.address, "claim_ownership", claim_ownership_arg_to_mich(), params);
+        }
+        throw new Error("Contract not initialised");
+    }
+    async pause(params: Partial<ex.Parameters>): Promise<att.CallResult> {
+        if (this.address != undefined) {
+            return await ex.call(this.address, "pause", pause_arg_to_mich(), params);
+        }
+        throw new Error("Contract not initialised");
+    }
+    async unpause(params: Partial<ex.Parameters>): Promise<att.CallResult> {
+        if (this.address != undefined) {
+            return await ex.call(this.address, "unpause", unpause_arg_to_mich(), params);
+        }
+        throw new Error("Contract not initialised");
+    }
+    async set_metadata(k: string, d: att.Option<att.Bytes>, params: Partial<ex.Parameters>): Promise<att.CallResult> {
+        if (this.address != undefined) {
+            return await ex.call(this.address, "set_metadata", set_metadata_arg_to_mich(k, d), params);
+        }
+        throw new Error("Contract not initialised");
+    }
+    async set_token_metadata(tid: att.Nat, tdata: Array<[
+        string,
+        att.Bytes
+    ]>, params: Partial<ex.Parameters>): Promise<att.CallResult> {
+        if (this.address != undefined) {
+            return await ex.call(this.address, "set_token_metadata", set_token_metadata_arg_to_mich(tid, tdata), params);
+        }
+        throw new Error("Contract not initialised");
+    }
     async update_operators(upl: Array<update_op>, params: Partial<ex.Parameters>): Promise<att.CallResult> {
         if (this.address != undefined) {
             return await ex.call(this.address, "update_operators", update_operators_arg_to_mich(upl), params);
@@ -423,24 +539,81 @@ export class Tzombies {
         }
         throw new Error("Contract not initialised");
     }
+    async do_transfer(txs: Array<transfer_param>, params: Partial<ex.Parameters>): Promise<att.CallResult> {
+        if (this.address != undefined) {
+            return await ex.call(this.address, "do_transfer", do_transfer_arg_to_mich(txs), params);
+        }
+        throw new Error("Contract not initialised");
+    }
+    async transfer_gasless(batch: Array<gasless_param>, params: Partial<ex.Parameters>): Promise<att.CallResult> {
+        if (this.address != undefined) {
+            return await ex.call(this.address, "transfer_gasless", transfer_gasless_arg_to_mich(batch), params);
+        }
+        throw new Error("Contract not initialised");
+    }
     async transfer(txs: Array<transfer_param>, params: Partial<ex.Parameters>): Promise<att.CallResult> {
         if (this.address != undefined) {
             return await ex.call(this.address, "transfer", transfer_arg_to_mich(txs), params);
         }
         throw new Error("Contract not initialised");
     }
-    async register(id: att.Nat, info: Array<[
-        string,
-        att.Bytes
-    ]>, params: Partial<ex.Parameters>): Promise<att.CallResult> {
+    async mint(tow: att.Address, tid: att.Nat, nbt: att.Nat, params: Partial<ex.Parameters>): Promise<att.CallResult> {
         if (this.address != undefined) {
-            return await ex.call(this.address, "register", register_arg_to_mich(id, info), params);
+            return await ex.call(this.address, "mint", mint_arg_to_mich(tow, tid, nbt), params);
         }
         throw new Error("Contract not initialised");
     }
-    async mint(id: att.Nat, recipient: att.Address, params: Partial<ex.Parameters>): Promise<att.CallResult> {
+    async burn(tid: att.Nat, nbt: att.Nat, params: Partial<ex.Parameters>): Promise<att.CallResult> {
         if (this.address != undefined) {
-            return await ex.call(this.address, "mint", mint_arg_to_mich(id, recipient), params);
+            return await ex.call(this.address, "burn", burn_arg_to_mich(tid, nbt), params);
+        }
+        throw new Error("Contract not initialised");
+    }
+    async permit_transfer(txs: Array<transfer_param>, permit: att.Option<[
+        att.Key,
+        att.Signature
+    ]>, params: Partial<ex.Parameters>): Promise<att.CallResult> {
+        if (this.address != undefined) {
+            return await ex.call(this.address, "permit_transfer", permit_transfer_arg_to_mich(txs, permit), params);
+        }
+        throw new Error("Contract not initialised");
+    }
+    async get_declare_ownership_param(candidate: att.Address, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+        if (this.address != undefined) {
+            return await ex.get_call_param(this.address, "declare_ownership", declare_ownership_arg_to_mich(candidate), params);
+        }
+        throw new Error("Contract not initialised");
+    }
+    async get_claim_ownership_param(params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+        if (this.address != undefined) {
+            return await ex.get_call_param(this.address, "claim_ownership", claim_ownership_arg_to_mich(), params);
+        }
+        throw new Error("Contract not initialised");
+    }
+    async get_pause_param(params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+        if (this.address != undefined) {
+            return await ex.get_call_param(this.address, "pause", pause_arg_to_mich(), params);
+        }
+        throw new Error("Contract not initialised");
+    }
+    async get_unpause_param(params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+        if (this.address != undefined) {
+            return await ex.get_call_param(this.address, "unpause", unpause_arg_to_mich(), params);
+        }
+        throw new Error("Contract not initialised");
+    }
+    async get_set_metadata_param(k: string, d: att.Option<att.Bytes>, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+        if (this.address != undefined) {
+            return await ex.get_call_param(this.address, "set_metadata", set_metadata_arg_to_mich(k, d), params);
+        }
+        throw new Error("Contract not initialised");
+    }
+    async get_set_token_metadata_param(tid: att.Nat, tdata: Array<[
+        string,
+        att.Bytes
+    ]>, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+        if (this.address != undefined) {
+            return await ex.get_call_param(this.address, "set_token_metadata", set_token_metadata_arg_to_mich(tid, tdata), params);
         }
         throw new Error("Contract not initialised");
     }
@@ -456,24 +629,42 @@ export class Tzombies {
         }
         throw new Error("Contract not initialised");
     }
+    async get_do_transfer_param(txs: Array<transfer_param>, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+        if (this.address != undefined) {
+            return await ex.get_call_param(this.address, "do_transfer", do_transfer_arg_to_mich(txs), params);
+        }
+        throw new Error("Contract not initialised");
+    }
+    async get_transfer_gasless_param(batch: Array<gasless_param>, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+        if (this.address != undefined) {
+            return await ex.get_call_param(this.address, "transfer_gasless", transfer_gasless_arg_to_mich(batch), params);
+        }
+        throw new Error("Contract not initialised");
+    }
     async get_transfer_param(txs: Array<transfer_param>, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
         if (this.address != undefined) {
             return await ex.get_call_param(this.address, "transfer", transfer_arg_to_mich(txs), params);
         }
         throw new Error("Contract not initialised");
     }
-    async get_register_param(id: att.Nat, info: Array<[
-        string,
-        att.Bytes
-    ]>, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+    async get_mint_param(tow: att.Address, tid: att.Nat, nbt: att.Nat, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
         if (this.address != undefined) {
-            return await ex.get_call_param(this.address, "register", register_arg_to_mich(id, info), params);
+            return await ex.get_call_param(this.address, "mint", mint_arg_to_mich(tow, tid, nbt), params);
         }
         throw new Error("Contract not initialised");
     }
-    async get_mint_param(id: att.Nat, recipient: att.Address, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+    async get_burn_param(tid: att.Nat, nbt: att.Nat, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
         if (this.address != undefined) {
-            return await ex.get_call_param(this.address, "mint", mint_arg_to_mich(id, recipient), params);
+            return await ex.get_call_param(this.address, "burn", burn_arg_to_mich(tid, nbt), params);
+        }
+        throw new Error("Contract not initialised");
+    }
+    async get_permit_transfer_param(txs: Array<transfer_param>, permit: att.Option<[
+        att.Key,
+        att.Signature
+    ]>, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+        if (this.address != undefined) {
+            return await ex.get_call_param(this.address, "permit_transfer", permit_transfer_arg_to_mich(txs, permit), params);
         }
         throw new Error("Contract not initialised");
     }
@@ -487,10 +678,38 @@ export class Tzombies {
         }
         throw new Error("Contract not initialised");
     }
+    async get_owner(): Promise<att.Address> {
+        if (this.address != undefined) {
+            const storage = await ex.get_raw_storage(this.address);
+            return att.Address.from_mich((storage as att.Mpair).args[0]);
+        }
+        throw new Error("Contract not initialised");
+    }
+    async get_permits(): Promise<att.Address> {
+        if (this.address != undefined) {
+            const storage = await ex.get_raw_storage(this.address);
+            return att.Address.from_mich((storage as att.Mpair).args[1]);
+        }
+        throw new Error("Contract not initialised");
+    }
+    async get_owner_candidate(): Promise<att.Option<att.Address>> {
+        if (this.address != undefined) {
+            const storage = await ex.get_raw_storage(this.address);
+            return att.Option.from_mich((storage as att.Mpair).args[2], x => { return att.Address.from_mich(x); });
+        }
+        throw new Error("Contract not initialised");
+    }
+    async get_paused(): Promise<boolean> {
+        if (this.address != undefined) {
+            const storage = await ex.get_raw_storage(this.address);
+            return att.mich_to_bool((storage as att.Mpair).args[3]);
+        }
+        throw new Error("Contract not initialised");
+    }
     async get_token_metadata_value(key: att.Nat): Promise<token_metadata_value | undefined> {
         if (this.address != undefined) {
             const storage = await ex.get_raw_storage(this.address);
-            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[0]).toString()), key.to_mich(), token_metadata_key_mich_type);
+            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[4]).toString()), key.to_mich(), token_metadata_key_mich_type);
             if (data != undefined) {
                 return token_metadata_value.from_mich(data);
             }
@@ -503,7 +722,7 @@ export class Tzombies {
     async has_token_metadata_value(key: att.Nat): Promise<boolean> {
         if (this.address != undefined) {
             const storage = await ex.get_raw_storage(this.address);
-            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[0]).toString()), key.to_mich(), token_metadata_key_mich_type);
+            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[4]).toString()), key.to_mich(), token_metadata_key_mich_type);
             if (data != undefined) {
                 return true;
             }
@@ -513,17 +732,10 @@ export class Tzombies {
         }
         throw new Error("Contract not initialised");
     }
-    async get_registered(): Promise<Array<att.Nat>> {
-        if (this.address != undefined) {
-            const storage = await ex.get_raw_storage(this.address);
-            return att.mich_to_list((storage as att.Mpair).args[1], x => { return att.Nat.from_mich(x); });
-        }
-        throw new Error("Contract not initialised");
-    }
     async get_ledger_value(key: ledger_key): Promise<att.Nat | undefined> {
         if (this.address != undefined) {
             const storage = await ex.get_raw_storage(this.address);
-            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[2]).toString()), key.to_mich(), ledger_key_mich_type);
+            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[5]).toString()), key.to_mich(), ledger_key_mich_type);
             if (data != undefined) {
                 return att.Nat.from_mich(data);
             }
@@ -536,7 +748,7 @@ export class Tzombies {
     async has_ledger_value(key: ledger_key): Promise<boolean> {
         if (this.address != undefined) {
             const storage = await ex.get_raw_storage(this.address);
-            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[2]).toString()), key.to_mich(), ledger_key_mich_type);
+            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[5]).toString()), key.to_mich(), ledger_key_mich_type);
             if (data != undefined) {
                 return true;
             }
@@ -549,7 +761,7 @@ export class Tzombies {
     async get_operator_value(key: operator_key): Promise<operator_value | undefined> {
         if (this.address != undefined) {
             const storage = await ex.get_raw_storage(this.address);
-            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[3]).toString()), key.to_mich(), operator_key_mich_type);
+            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[6]).toString()), key.to_mich(), operator_key_mich_type);
             if (data != undefined) {
                 return operator_value.from_mich(data);
             }
@@ -562,7 +774,7 @@ export class Tzombies {
     async has_operator_value(key: operator_key): Promise<boolean> {
         if (this.address != undefined) {
             const storage = await ex.get_raw_storage(this.address);
-            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[3]).toString()), key.to_mich(), operator_key_mich_type);
+            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[6]).toString()), key.to_mich(), operator_key_mich_type);
             if (data != undefined) {
                 return true;
             }
@@ -575,7 +787,7 @@ export class Tzombies {
     async get_operator_for_all_value(key: operator_for_all_key): Promise<operator_for_all_value | undefined> {
         if (this.address != undefined) {
             const storage = await ex.get_raw_storage(this.address);
-            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[4]).toString()), key.to_mich(), operator_for_all_key_mich_type);
+            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[7]).toString()), key.to_mich(), operator_for_all_key_mich_type);
             if (data != undefined) {
                 return operator_for_all_value.from_mich(data);
             }
@@ -588,7 +800,33 @@ export class Tzombies {
     async has_operator_for_all_value(key: operator_for_all_key): Promise<boolean> {
         if (this.address != undefined) {
             const storage = await ex.get_raw_storage(this.address);
-            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[4]).toString()), key.to_mich(), operator_for_all_key_mich_type);
+            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[7]).toString()), key.to_mich(), operator_for_all_key_mich_type);
+            if (data != undefined) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        throw new Error("Contract not initialised");
+    }
+    async get_metadata_value(key: string): Promise<att.Bytes | undefined> {
+        if (this.address != undefined) {
+            const storage = await ex.get_raw_storage(this.address);
+            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[8]).toString()), att.string_to_mich(key), att.prim_annot_to_mich_type("string", []));
+            if (data != undefined) {
+                return att.Bytes.from_mich(data);
+            }
+            else {
+                return undefined;
+            }
+        }
+        throw new Error("Contract not initialised");
+    }
+    async has_metadata_value(key: string): Promise<boolean> {
+        if (this.address != undefined) {
+            const storage = await ex.get_raw_storage(this.address);
+            const data = await ex.get_big_map_value(BigInt(att.Int.from_mich((storage as att.Mpair).args[8]).toString()), att.string_to_mich(key), att.prim_annot_to_mich_type("string", []));
             if (data != undefined) {
                 return true;
             }
@@ -599,13 +837,29 @@ export class Tzombies {
         throw new Error("Contract not initialised");
     }
     errors = {
-        THIS_TOKEN_COSTS_2TZ: att.string_to_mich("\"This token costs 2tz\""),
-        r_registered: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_registered\"")]),
-        FA2_INSUFFICIENT_BALANCE: att.string_to_mich("\"FA2_INSUFFICIENT_BALANCE\""),
-        FA2_NOT_OPERATOR: att.string_to_mich("\"FA2_NOT_OPERATOR\""),
-        FA2_NOT_OWNER: att.string_to_mich("\"FA2_NOT_OWNER\""),
+        SIGNER_NOT_FROM: att.string_to_mich("\"SIGNER_NOT_FROM\""),
+        fa2_r9: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"fa2_r9\"")]),
         NO_TRANSFER: att.string_to_mich("\"NO_TRANSFER\""),
-        FA2_TOKEN_UNDEFINED: att.string_to_mich("\"FA2_TOKEN_UNDEFINED\"")
+        fa2_r8: att.string_to_mich("\"FA2_INSUFFICIENT_BALANCE\""),
+        fa2_r7: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"fa2_r7\"")]),
+        FA2_INSUFFICIENT_BALANCE: att.string_to_mich("\"FA2_INSUFFICIENT_BALANCE\""),
+        THIS_TOKEN_COSTS_2TZ: att.string_to_mich("\"This token costs 2tz\""),
+        fa2_r6: att.string_to_mich("\"FA2_TOKEN_UNDEFINED\""),
+        fa2_r5: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"fa2_r5\"")]),
+        INVALID_CALLER: att.string_to_mich("\"INVALID_CALLER\""),
+        fa2_r4: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"fa2_r4\"")]),
+        fa2_r3: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"fa2_r3\"")]),
+        FA2_TOKEN_UNDEFINED: att.string_to_mich("\"FA2_TOKEN_UNDEFINED\""),
+        fa2_r2: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"fa2_r2\"")]),
+        FA2_NOT_OWNER: att.string_to_mich("\"FA2_NOT_OWNER\""),
+        fa2_r1: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"fa2_r1\"")]),
+        tmd_r1: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"tmd_r1\"")]),
+        md_r1: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"md_r1\"")]),
+        pausable_r2: att.string_to_mich("\"CONTRACT_NOT_PAUSED\""),
+        pausable_r1: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"pausable_r1\"")]),
+        ownership_r1: att.string_to_mich("\"INVALID_CALLER\""),
+        FA2_NOT_OPERATOR: att.string_to_mich("\"FA2_NOT_OPERATOR\""),
+        CONTRACT_PAUSED: att.string_to_mich("\"CONTRACT_PAUSED\"")
     };
 }
 export const tzombies = new Tzombies();

@@ -5,14 +5,15 @@ ccli generate binding-dapp-ts market.arl --input-path ./contracts --output-path 
 
 docker run --rm --name my-sandbox --detach -p 20000:20000 --cpus 1 -e block_time=10 oxheadalpha/flextesa:latest limabox start
 
-ccli deploy ./contracts/fa2.arl
-ccli deploy ./contracts/market.arl --parameters '{"fa2": "KT1UzmTDkDHE18vwc5bF1TASaJu3fnMdFriN"}'
+ccli deploy contracts/permits.arl --parameters '{"owner": "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb"}'
+ccli deploy ./contracts/fa2.arl --parameters '{"owner": "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb", "permits": ""}'
+ccli deploy ./contracts/market.arl
 
 
 # register the "brainz" NFT
-ccli call fa2 --entry register --arg '{"id": 1, "info": [{"key": "", "value": "0x697066733a2f2f516d53445733794257756e7977624c544c78723835784843464d6d747a5372365a55565138433375346161314d65"}]}'
+ccli call fa2 --entry set_token_metadata --arg '{"tid": 1, "tdata": [{"key": "", "value": "0x697066733a2f2f516d53445733794257756e7977624c544c78723835784843464d6d747a5372365a55565138433375346161314d65"}]}'
 # register the "tzombie" NFT
-ccli call fa2 --entry register --arg '{"id": 2, "info": [{"key": "", "value": "697066733a2f2f516d546d65517a55754b37716d467337795466563254434c5a416852466d716d714a793536636b6b7a666a586939"}]}'
+ccli call fa2 --entry set_token_metadata --arg '{"tid": 2, "tdata": [{"key": "", "value": "697066733a2f2f516d546d65517a55754b37716d467337795466563254434c5a416852466d716d714a793536636b6b7a666a586939"}]}'
 
 # mint one NFT
 ccli call fa2 --entry mint --arg '{"id": 1}'
