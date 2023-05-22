@@ -16,4 +16,4 @@
   * [Deploying and testing](smart-contracts/fa2-contract/deploying-and-testing.md)
 * [Marketplace contract](smart-contracts/marketplace-contract/README.md)
   * [Deploying and testing](smart-contracts/marketplace-contract/deploying-and-testing.md)
-* [Page 1](smart-contracts/page-1.md)
+* [Better testing](smart-contracts/better-testing.md)

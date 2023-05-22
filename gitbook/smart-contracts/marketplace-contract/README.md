@@ -114,6 +114,10 @@ Now, buyers will call another entrypoint, that will do the following:&#x20;
 6. Call the FA2 contract to transfer the token from the seller to the buyer
 7. Transfer the tez coins from the buyer to the seller
 
+{% hint style="info" %}
+Important: By default, only the token owner is allowed to transfer their tokens. In this case, the buyer instructs the marketplace to transfer someone else's token. To allow this behavior, the token owner must approve the marketplace contract to transfer their tokens. On Tezos, the marketplace will be called an `operator`
+{% endhint %}
+
 ```archetype
 entry buy(order_id: nat, amount_: nat) {
     require {

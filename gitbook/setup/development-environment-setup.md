@@ -43,6 +43,21 @@ npm install --global yarn
 rm package-lock.json
 ```
 
+{% hint style="info" %}
+Some depedencies have issues with Next.js being executed on both the server and the client. To solve potential warnings, let's add this in the `nextConfig` object in `next.config.js`
+
+
+
+```javascript
+webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = { fs: false }
+    }
+    return config
+  }
+```
+{% endhint %}
+
 ### Material UI
 
 [Material UI](https://mui.com/material-ui/getting-started/overview/) is a toolkit we'll use to design a standardised user interface. It takes care of styles, layouts, and comes with a set of common components, directly integrated with React.&#x20;
