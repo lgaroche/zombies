@@ -14,3 +14,6 @@ The final application is deployed on the Ghostnet testnet at [https://zombies-pi
 The code for this tutorial has not been audited, neither is it optimised for production use. It was written for educational purposes only, and should not be used as-is on production.
 {% endhint %}
 
+### Design
+
+TZombies is a NFT collection of scary brains and zombies. Collectors are invited to connect their Tezos wallet to the web app and mint one of more NFTs. Some of them are free, some of them cost 2 ꜩ. The app also features a marketplace where collectors can openly trade their brains and zombies.&#x20;
