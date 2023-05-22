@@ -16,10 +16,10 @@ ccli call fa2 --entry set_token_metadata --arg '{"tid": 1, "tdata": [{"key": "",
 ccli call fa2 --entry set_token_metadata --arg '{"tid": 2, "tdata": [{"key": "", "value": "697066733a2f2f516d546d65517a55754b37716d467337795466563254434c5a416852466d716d714a793536636b6b7a666a586939"}]}'
 
 # mint one NFT
-ccli call fa2 --entry mint --arg '{"id": 1}'
+ccli call fa2 --entry mint --arg '{"tow": "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb", "tid": 1, "nbt": 1}'
 
 # create sale
-ccli call market --entry sell --arg '{"token_id_": 1, "amount_": 1, "price_": 100, "expiry_": "2023-06-01 23:00:00"}'
+ccli call market --entry sell --arg '{"fa2_": "KT1SRwfE3KHohEJcrR9SttbDWqbXTLWcLhr1", "token_id_": 1, "amount_": 1, "price_": 100, "expiry_": "2023-06-01 23:00:00"}'
 
 # switch to buyer account and buy the NFT
 ccli set account bob
