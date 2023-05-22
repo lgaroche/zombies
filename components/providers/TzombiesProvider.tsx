@@ -104,7 +104,12 @@ const TzombiesProvider = ({ children }: { children: React.ReactNode }) => {
       if (!fa2 || !account || !account.address) {
         return
       }
-      return await fa2.mint(new Nat(id), new Address(account.address), {})
+      return await fa2.mint(
+        new Address(account.address),
+        new Nat(id),
+        new Nat(1),
+        {}
+      )
     },
     [fa2, account]
   )
@@ -122,14 +127,19 @@ const TzombiesProvider = ({ children }: { children: React.ReactNode }) => {
     }
     const fetchRegisteredTokens = async () => {
       const tokenInfo = new Map()
-      const registered = await fa2.get_registered()
-      for (const id of registered) {
-        const value = await fa2.get_token_metadata_value(id)
-        const b = value?.token_info.find((info) => info[0] === "")
-        if (!b || b.length < 2) continue
-        const info = b[1].hex_decode()
-        const metadata = await fetchMetadata(info)
-        tokenInfo.set(id.to_number(), metadata)
+      for (const id of [1, 2]) {
+        try {
+          console.log("get value...")
+          const value = await fa2.get_token_metadata_value(new Nat(id))
+          const b = value?.token_info.find((info) => info[0] === "")
+          if (!b || b.length < 2) continue
+          const info = b[1].hex_decode()
+          const metadata = await fetchMetadata(info)
+          tokenInfo.set(id, metadata)
+        } catch (e) {
+          console.error(e)
+          continue
+        }
       }
       console.log(tokenInfo)
       setRegisteredTokenInfo(tokenInfo)

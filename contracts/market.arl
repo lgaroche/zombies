@@ -1,4 +1,4 @@
-archetype zombie_market
+archetype market
 
 record transfer_destination {
   to_dest           : address;
@@ -11,9 +11,9 @@ record transfer_param {
   tp_txs  : list<transfer_destination>;
 } as ((%from_, %txs))
 
-asset order identified by fa2 id to big_map {
-    fa2: address;
+asset order identified by id to big_map {
     id: nat;
+    fa2: address;
     seller: address;
     token_id: nat;
     amount: nat;
@@ -44,7 +44,7 @@ entry sell(fa2_: address, token_id_: nat, amount_: nat, price_: tez, expiry_: da
     
 }
 
-entry cancel(order_id: (address * nat)) {
+entry cancel(order_id: nat) {
     require {
         r_cancel_order: order.contains(order_id);
         r_owner: order[order_id].seller = caller;
@@ -54,7 +54,7 @@ entry cancel(order_id: (address * nat)) {
     }
 }
 
-entry buy(order_id: (address * nat), amount_: nat) {
+entry buy(order_id: nat, amount_: nat) {
     require {
         r_buy_amount: amount_ > 0;
         r_order: order.contains(order_id) and order[order_id].amount >= amount_;
@@ -75,7 +75,7 @@ entry buy(order_id: (address * nat), amount_: nat) {
             token_amount_dest = amount_
         };
 
-        transfer 0tz to order_id[0] call %transfer<list<transfer_param>>([{
+        transfer 0tz to order_.fa2 call %transfer<list<transfer_param>>([{
             tp_from = order_.seller; 
             tp_txs = [tx]
         }]);
