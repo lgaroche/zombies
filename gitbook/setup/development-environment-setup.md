@@ -29,17 +29,12 @@ npx create-next-app@13.4.3 --typescript
 
 The wizard will prompt for a few questions, answers are as follows:
 
-```
-Need to install the following packages:
-  create-next-app@13.4.3
-Ok to proceed? (y)
-✔ What is your project named? … tzombies
-✔ Would you like to use ESLint with this project? … Yes
-✔ Would you like to use Tailwind CSS with this project? … No
-✔ Would you like to use `src/` directory with this project? … Yes
-✔ Use App Router (recommended)? … Yes
-✔ Would you like to customize the default import alias? … No
-```
+> * What is your project named? … _**tzombies**_
+> * Would you like to use ESLint with this project? <mark style="color:green;">**Yes**</mark>
+> * Would you like to use Tailwind CSS with this project? <mark style="color:red;">**No**</mark>
+> * Would you like to use `src/` directory with this project? <mark style="color:green;">**Yes**</mark>
+> * Use App Router (recommended)? <mark style="color:green;">**Yes**</mark>
+> * Would you like to customize the default import alias? <mark style="color:red;">**No**</mark>
 
 Let's replace `npm` with `yarn` for faster iteration:
 

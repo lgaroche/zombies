@@ -1,11 +1,19 @@
 # Table of contents
 
-## Introduction
+## ℹ Introduction
 
 * [What is TZombies?](README.md)
 * [Architecture](introduction/architecture.md)
 
-## Setup
+## 🛠 Setup
 
 * [Development environment setup](setup/development-environment-setup.md)
-* [Completium](setup/completium.md)
+* [Completium](introduction/page-1.md)
+
+## 🤖 Smart Contracts
+
+* [FA2 Contract](smart-contracts/fa2-contract/README.md)
+  * [Deploying and testing](smart-contracts/fa2-contract/deploying-and-testing.md)
+* [Marketplace contract](smart-contracts/marketplace-contract/README.md)
+  * [Deploying and testing](smart-contracts/marketplace-contract/deploying-and-testing.md)
+* [Page 1](smart-contracts/page-1.md)
