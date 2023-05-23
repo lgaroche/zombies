@@ -148,15 +148,16 @@ describe("Mint and trade", async () => {
 In this block, add the mint test:&#x20;
 
 ```typescript
-it("mint zombie", async () => {
+  it("mint zombie", async () => {
     await fa2.mint(
       alice.get_address(), // tow
       new Nat(1), // tid
       new Nat(1), // nbt
       {
-      as: alice,
-      amount: new Tez(2),
-    })
+        as: alice,
+        amount: new Tez(2),
+      }
+    )
     // check that Alice now has 1 zombie
     const key = new ledger_key(alice.get_address(), new Nat(1))
     const amount = await fa2.get_ledger_value(key)

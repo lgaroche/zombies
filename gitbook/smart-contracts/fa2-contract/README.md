@@ -94,7 +94,7 @@ entry mint (tow : address, tid : nat, nbt : nat) {
   }
   effect {
     if tid = 1 then begin
-      do_require(transferred = 2tz, "This token costs 2tz");
+      do_require(transferred = nbt * 2tz, "This token costs 2tz");
       transfer 2tz to caller; // for the tutorial: refund the buyer immediately
     end;
 

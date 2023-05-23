@@ -44,7 +44,7 @@ Now we have `KT1CPHS16kLFHFi5AXNhoYjD67nwsEFr6h7o` as our fa2 contract.&#x20;
 
 We can keep using the command line to register tokens and test some minting.&#x20;
 
-The FA2 contract has a `set_token_metadata` entrypoint. This adds metadata to a given token id. We consider it's like "registering" a token on our contract. We can call our entrypoint with the following command (we'll get into the meaning of these parameters later).
+The FA2 contract has a `set_token_metadata` entrypoint. This adds metadata to a given token id. We consider it's like "registering" a token on our contract. We can call our entrypoint with the following command (we'll get into the meaning of these parameters [later](../token-metadata.md#contract-encoding)).
 
 ```
 ccli call tzombies --entry set_token_metadata --arg '{"tid": 1, "tdata": [{"key": "", "value": "0x697066733a2f2f516d53445733794257756e7977624c544c78723835784843464d6d747a5372365a55565138433375346161314d65"}]}'

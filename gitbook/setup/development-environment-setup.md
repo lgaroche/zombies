@@ -24,7 +24,7 @@ Compatiblity between dependencies is quite fragile, especially with taquito and 
 Use the create-next-app tool to setup the environment:
 
 ```
-npx create-next-app@13.4.3 --typescript
+npx create-next-app@13.0.0 --typescript
 ```
 
 The wizard will prompt for a few questions, answers are as follows:
@@ -41,6 +41,7 @@ Let's replace `npm` with `yarn` for faster iteration:
 ```bash
 npm install --global yarn
 rm package-lock.json
+yarn install
 ```
 
 {% hint style="info" %}
@@ -57,6 +58,21 @@ webpack: (config, { isServer }) => {
   }
 ```
 {% endhint %}
+
+You can now start the development server with
+
+```bash
+yarn dev
+```
+
+It will automatically reload after editing files. Note that some changes (such as installing a package) still require restarting the server.&#x20;
+
+To build for production
+
+```bash
+yarn build
+yarn start # run a local server
+```
 
 ### Material UI
 
