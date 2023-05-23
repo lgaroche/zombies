@@ -22,7 +22,9 @@ yarn add --dev @completium/experiment-ts@0.1.13 ts-mocha@10.0.0
 yarn add --dev @types/expect@24.3.0 @types/mocha@9.1.1 @types/node@20.2.3 
 ```
 
+{% hint style="info" %}
 `ts-mocha` is a TypeScript version of the testing framework `mocha`. To enable loading ts modules for our tests, we need to edit the `tsconfig.json` and change `compilerOptions.module` to `"commonjs"`.&#x20;
+{% endhint %}
 
 ## Script
 

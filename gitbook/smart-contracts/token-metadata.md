@@ -1,3 +1,7 @@
+---
+description: The link between on-chain and off-chain data
+---
+
 # Token metadata
 
 The smart contracts only store the minimum amount of data needed to identify the owner of a token. Its "external" properties are usually stored off-chain.&#x20;

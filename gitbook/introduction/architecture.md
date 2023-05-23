@@ -11,7 +11,7 @@ For the sake of learning, we will not integrate any indexing service in this dAp
 
 ## Contracts
 
-Two contracts will be developed.
+Two contracts will be developed. (three will be deployed)
 
 ### FA2
 
@@ -26,6 +26,8 @@ Seen differently: the multi-asset is the general case, NFT is a multi-asset wher
 In this tutorial we will use the multi-asset standard, as mastering it will enable all other use-cases.
 
 As the FA2 is a standard that defines a common interface, there exist default implementation in all the smart contract languages available on Tezos. We will use this default implementation, on top of which we'll add our custom code.
+
+The FA2 contract we'll use come with a `permits` contract, that we'll deploy along.
 
 ### Market
 

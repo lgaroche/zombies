@@ -27,7 +27,7 @@ Most of the above will follow a similar concept. On first load, it will fetch da
 
 A few environment variables will be used in the project. I recommend setting them in `.env.local` file during development. The following variables will be used (contracts addresses are left blank intentionally, they should be set with the deployed contract addresses, see the [smart contract](../smart-contracts/marketplace-contract/deploying-and-testing.md) section.&#x20;
 
-```shellscript
+```bash
 NEXT_PUBLIC_FA2_ADDRESS=
 NEXT_PUBLIC_MARKET_ADDRESS=
 NEXT_PUBLIC_TEZOS_RPC=http://localhost:3000/sandbox
@@ -35,3 +35,11 @@ NEXT_PUBLIC_NETWORK=custom
 NEXT_PUBLIC_WERT_PARTNER_ID=01H0SP3RFRFZPH7H4NAJM4HZ39
 ```
 
+{% hint style="info" %}
+To switch to the ghostnet network, use the following:
+
+```bash
+NEXT_PUBLIC_TEZOS_RPC=https://ghostnet.smartpy.io
+NEXT_PUBLIC_NETWORK=ghostnet
+```
+{% endhint %}

@@ -144,3 +144,12 @@ const ClaimButton = useCallback(
   [handleClaim, handlePurchase, loading]
 )
 ```
+
+### Test
+
+In order to test the Wert widget, you can use the following information:
+
+| Phone | +33123456789 |   |
+| ----- | ------------ | - |
+| Code  | 0000         |   |
+| CVV   | 200          |   |
