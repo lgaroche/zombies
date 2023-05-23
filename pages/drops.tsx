@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useState } from "react"
 import { TokenList } from "../components/Token"
 import { Alert, Button, Snackbar, Typography } from "@mui/material"
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart"

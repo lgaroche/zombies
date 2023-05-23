@@ -19,7 +19,7 @@ interface TransferParameters {
 interface TzombiesContextProps {
   fa2?: Tzombies
   tokenInfo: Map<number, ZombieMetadata>
-  inventory: Map<number, number>
+  inventory: UserInventory
   transfer: (params: TransferParameters) => Promise<CallResult | undefined>
   freeClaim: (id: number) => Promise<CallResult | undefined>
   fetchInventory: () => void
@@ -129,7 +129,6 @@ const TzombiesProvider = ({ children }: { children: React.ReactNode }) => {
       const tokenInfo = new Map()
       for (const id of [1, 2]) {
         try {
-          console.log("get value...")
           const value = await fa2.get_token_metadata_value(new Nat(id))
           const b = value?.token_info.find((info) => info[0] === "")
           if (!b || b.length < 2) continue

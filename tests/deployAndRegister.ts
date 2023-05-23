@@ -55,7 +55,7 @@ describe("Register NFTs", async () => {
   })
   it("register brainz", async () => {
     await fa2.set_token_metadata(
-      new Nat(1),
+      new Nat(2),
       [
         [
           "",
@@ -102,7 +102,7 @@ describe("Mint and trade", async () => {
   it("buy zombie before operator update should fail", async () => {
     await expect_to_fail(async () => {
       await market.buy(new Nat(1), new Nat(1), { amount: new Tez(5), as: bob })
-    }, fa2.errors.INVALID_CALLER)
+    }, permits.errors.INVALID_CALLER)
 
     // check that Alice still has 1 zombie
     const key = new ledger_key(alice.get_address(), new Nat(1))

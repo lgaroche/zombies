@@ -9,6 +9,19 @@ import {
   remove_for_all,
 } from "../../contracts/bindings/fa2"
 
+interface SellParameters {
+  tokenId: number
+  amount: number
+  price: number
+  expiry: Date
+}
+
+interface Sale {
+  saleId: number
+  seller: Address
+  parameters: SellParameters
+}
+
 interface MarketProviderContextProps {
   market?: Market
   isApproved: boolean
@@ -39,19 +52,6 @@ const MarketProviderContext = React.createContext<MarketProviderContextProps>({
   fetchMarketplaceApproval: async () => {},
   fetchSales: async () => {},
 })
-
-interface SellParameters {
-  tokenId: number
-  amount: number
-  price: number
-  expiry: Date
-}
-
-interface Sale {
-  saleId: number
-  seller: Address
-  parameters: SellParameters
-}
 
 const useMarketProviderContext = () => React.useContext(MarketProviderContext)
 
