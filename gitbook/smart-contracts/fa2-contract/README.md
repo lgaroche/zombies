@@ -65,6 +65,8 @@ entry set_token_metadata (tid : nat, tdata: map<string, bytes>) {
 
 In the default template, the contract owner has the ability to change the permits contract associated. Even though that's a practical solution if the permits contract needs to be updated or fixed, it creates a hazard risk, as the owner could perform a malicious change.&#x20;
 
+This step is optional, just keep in mind this aspect if deploying a real collection.
+
 ```
 // Remove this section: 
 /* PERMITS ----------------------------------------------------------------- */
@@ -81,7 +83,7 @@ entry set_permits(p : address) {
 
 ### The mint function
 
-We'll customize the `mint` function that comes with the template.&#x20;
+We'll customise the `mint` function that comes with the template.&#x20;
 
 1. We'd like to have an "open mint" NFT, where anyone can mint. Also, all mints are free, except for token id 1 that will cost 2 ꜩ. See the [design](../../#design) chapter.
 2. For the sake of the tutorial, we'll refund the cost of the NFT to the caller. This will be especially useful when using Wert, as they will not lose too many testnet coins. In a real life contract, we could forward the sales product to the owner, or keep it on the contract and have a `withdraw` entrypoint callable only by an approved address.

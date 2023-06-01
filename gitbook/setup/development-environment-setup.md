@@ -59,6 +59,16 @@ webpack: (config, { isServer }) => {
 ```
 {% endhint %}
 
+{% hint style="info" %}
+An [issue](https://github.com/ecadlabs/taquito/issues/2491) with Next and Taquito prevent the production build from working properly. While this issue is being fixed, a solution is to disable the `swc`minifier for prodution:&#x20;
+
+In `next.config.js`, set&#x20;
+
+```javascript
+swcMinify: false
+```
+{% endhint %}
+
 You can now start the development server with
 
 ```bash

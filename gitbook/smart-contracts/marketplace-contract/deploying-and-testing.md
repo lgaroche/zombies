@@ -30,7 +30,7 @@ Why did it fail? Remember, the marketplace contract is not allowed to transfer A
 
 ```bash
 ccli set account alice
-ccli call tzombies --entry update_operators_for_all --arg '{"upl": [{"add_for_all": "KT1Cj7TkHogPa2SxkqhTvoGK4WkrK3WGa4RW"}]}'
+ccli call tzombies --entry update_operators_for_all --arg '{"upl": [{ "kind": "left", "value": "<replace market address>" }]}'
 ```
 
 Now, try to buy again, it should work!
