@@ -1,14 +1,12 @@
 import {
   get_account,
-  set_endpoint,
   set_quiet,
   expect_to_fail,
 } from "@completium/experiment-ts"
-import { Tzombies, add_for_all } from "./bindings/tzombies"
+import { Tzombies, add_for_all, ledger_key } from "./bindings/tzombies"
 import { Permits } from "./bindings/permits"
 import { Market } from "./bindings/market"
 import { Nat, Bytes, Tez } from "@completium/archetype-ts-types"
-import { ledger_key } from "./bindings/tzombies"
 
 const assert = require("assert")
 
