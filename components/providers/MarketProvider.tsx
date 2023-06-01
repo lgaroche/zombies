@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { Zombie_market, order_key } from "../../contracts/bindings/market"
+import { Market } from "../../contracts/bindings/market"
 import { useWalletContext } from "./WalletProvider"
 import { UserInventory, useTzombiesContext } from "./TzombiesProvider"
 import { Nat, Address, Tez, CallResult } from "@completium/archetype-ts-types"
@@ -9,8 +9,21 @@ import {
   remove_for_all,
 } from "../../contracts/bindings/fa2"
 
+interface SellParameters {
+  tokenId: number
+  amount: number
+  price: number
+  expiry: Date
+}
+
+interface Sale {
+  saleId: number
+  seller: Address
+  parameters: SellParameters
+}
+
 interface MarketProviderContextProps {
-  market?: Zombie_market
+  market?: Market
   isApproved: boolean
   sales: Sale[]
   approve: () => Promise<void>
@@ -40,25 +53,12 @@ const MarketProviderContext = React.createContext<MarketProviderContextProps>({
   fetchSales: async () => {},
 })
 
-interface SellParameters {
-  tokenId: number
-  amount: number
-  price: number
-  expiry: Date
-}
-
-interface Sale {
-  saleId: number
-  seller: Address
-  parameters: SellParameters
-}
-
 const useMarketProviderContext = () => React.useContext(MarketProviderContext)
 
 const MarketProvider = ({ children }: { children: React.ReactNode }) => {
   const { fa2, fetchFa2Balance } = useTzombiesContext()
   const { Tezos, account } = useWalletContext()
-  const [market, setMarket] = useState<Zombie_market>()
+  const [market, setMarket] = useState<Market>()
   const [isApproved, setIsApproved] = useState<boolean>(false)
   const [sales, setSales] = useState<Sale[]>([])
 
@@ -66,7 +66,7 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
     if (!Tezos) {
       return
     }
-    setMarket(new Zombie_market(process.env.NEXT_PUBLIC_MARKET_ADDRESS))
+    setMarket(new Market(process.env.NEXT_PUBLIC_MARKET_ADDRESS))
   }, [Tezos])
 
   const fetchMarketplaceApproval = useCallback(async () => {
@@ -88,8 +88,7 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
     const sales: Sale[] = []
     const inventories: Map<Address, UserInventory> = new Map()
     for (let i = 1; i < nOrders.to_number(); i++) {
-      const key = new order_key(new Address(fa2.address), new Nat(i))
-      const order = await market.get_order_value(key)
+      const order = await market.get_order_value(new Nat(i))
       if (!order) continue
 
       // filter out expired orders
@@ -159,10 +158,7 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
   const cancel = useCallback(
     async (sale: Sale) => {
       if (!market || !fa2 || !fa2.address) return
-      return await market.cancel(
-        [new Address(fa2.address), new Nat(sale.saleId)],
-        {}
-      )
+      return await market.cancel(new Nat(sale.saleId), {})
     },
     [market, fa2]
   )
@@ -170,13 +166,9 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
   const buy = useCallback(
     async (sale: Sale, amount: number) => {
       if (!market || !fa2 || !fa2.address) return
-      return await market.buy(
-        [new Address(fa2.address), new Nat(sale.saleId)],
-        new Nat(amount),
-        {
-          amount: new Tez(sale.parameters.price * amount, "mutez"),
-        }
-      )
+      return await market.buy(new Nat(sale.saleId), new Nat(amount), {
+        amount: new Tez(sale.parameters.price * amount, "mutez"),
+      })
     },
     [market, fa2]
   )

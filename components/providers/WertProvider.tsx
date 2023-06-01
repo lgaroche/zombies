@@ -26,7 +26,7 @@ const WertProvider = ({ children }: { children: ReactNode }) => {
 
       const contract = await Tezos.contract.at(fa2.address)
       const txParams = contract.methods
-        .mint(id, account.address)
+        .mint(account.address, id, 1)
         .toTransferParams({ amount: 1 })
       const michelson = JSON.stringify(txParams?.parameter)
       console.log(michelson)

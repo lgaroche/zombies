@@ -1,4 +1,4 @@
-import * as ex from "@completium/dapp-ts";
+import * as ex from "@completium/experiment-ts";
 import * as att from "@completium/archetype-ts-types";
 export enum update_op_types {
     add_operator = "add_operator",
@@ -487,6 +487,14 @@ export class Tzombies {
             return await ex.get_balance(new att.Address(this.address));
         }
         throw new Error("Contract not initialised");
+    }
+    async deploy(owner: att.Address, permits: att.Address, params: Partial<ex.Parameters>) {
+        const address = (await ex.deploy("./contracts/tzombies.arl", {
+            owner: owner.to_mich(),
+            permits: permits.to_mich()
+        }, params)).address;
+        this.address = address;
+        this.balance_of_callback_address = (await deploy_balance_of_callback(params)).address;
     }
     async declare_ownership(candidate: att.Address, params: Partial<ex.Parameters>): Promise<att.CallResult> {
         if (this.address != undefined) {

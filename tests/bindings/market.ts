@@ -1,4 +1,4 @@
-import * as ex from "@completium/dapp-ts";
+import * as ex from "@completium/experiment-ts";
 import * as att from "@completium/archetype-ts-types";
 export class transfer_destination implements att.ArchetypeType {
     constructor(public to_dest: att.Address, public token_id_dest: att.Nat, public token_amount_dest: att.Nat) { }
@@ -119,6 +119,10 @@ export class Market {
             return await ex.get_balance(new att.Address(this.address));
         }
         throw new Error("Contract not initialised");
+    }
+    async deploy(params: Partial<ex.Parameters>) {
+        const address = (await ex.deploy("./contracts/market.arl", {}, params)).address;
+        this.address = address;
     }
     async sell(fa2_: att.Address, token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, expiry_: Date, params: Partial<ex.Parameters>): Promise<att.CallResult> {
         if (this.address != undefined) {
