@@ -15,7 +15,6 @@ import { TokenContent } from "./Token"
 import { useMarketProviderContext } from "./providers/MarketProvider"
 import { DateTimePicker } from "@mui/x-date-pickers"
 import { DateTime } from "luxon"
-import { useTzombiesContext } from "./providers/TzombiesProvider"
 
 interface SaleDialogProps {
   id: number
@@ -24,7 +23,6 @@ interface SaleDialogProps {
 
 const SaleDialog = ({ id, onClose }: SaleDialogProps) => {
   const { sell } = useMarketProviderContext()
-  const { inventory } = useTzombiesContext()
   const { fetchSales } = useMarketProviderContext()
   const [amount, setAmount] = useState<number>(1)
   const [price, setPrice] = useState<number>(10)
