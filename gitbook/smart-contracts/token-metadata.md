@@ -99,7 +99,7 @@ These two files are also published to IPFS. We get these two URI for our metadat
 
 ### Contract encoding
 
-According to the standard, the two metadata URI can be set in the smart contract as:
+According to the standard, the two metadata URI must be set as a bytes sequence representing the URI string in the smart contract. This gives us:
 
 * Zombie: `697066733a2f2f516d546d65517a55754b37716d467337795466563254434c5a416852466d716d714a793536636b6b7a666a586939`
 * Brainz: `697066733a2f2f516d53445733794257756e7977624c544c78723835784843464d6d747a5372365a55565138433375346161314d65`
