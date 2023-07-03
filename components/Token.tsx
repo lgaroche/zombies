@@ -58,11 +58,7 @@ const TokenList = ({ tokens, actions, extra }: TokenListProps) => (
   <Grid container spacing={2}>
     {tokens.map((id) => (
       <Grid item key={id}>
-        <Token
-          id={id}
-          actions={actions && actions(id)}
-          extra={extra && extra(id)}
-        />
+        <Token id={id} actions={actions?.(id)} extra={extra?.(id)} />
       </Grid>
     ))}
   </Grid>

@@ -143,7 +143,7 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
   >(
     async ({ tokenId, amount, price, expiry }: SellParameters) => {
       if (!market || !fa2 || !fa2.address) return
-      return await market.sell(
+      return await market.list_token(
         new Address(fa2.address),
         new Nat(tokenId),
         new Nat(amount),
@@ -158,7 +158,7 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
   const cancel = useCallback(
     async (sale: Sale) => {
       if (!market || !fa2 || !fa2.address) return
-      return await market.cancel(new Nat(sale.saleId), {})
+      return await market.remove_listing(new Nat(sale.saleId), {})
     },
     [market, fa2]
   )

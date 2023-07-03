@@ -27,7 +27,7 @@ npx completium-cli generate binding-ts * --input-path ./contracts --output-path 
 
 ```bash
 ccli deploy contracts/permits.arl --parameters '{"owner": "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb"}'
-ccli deploy ./contracts/fa2.arl --parameters '{"owner": "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb", "permits": "<replace permits_contract_address>"}'
+ccli deploy ./contracts/tzombies.arl --parameters '{"owner": "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb", "permits": "<replace permits_contract_address>"}'
 ccli deploy ./contracts/market.arl
 ```
 
@@ -44,7 +44,7 @@ ccli call tzombies --entry set_token_metadata --arg '{"tid": 2, "tdata": [{"key"
 
 ```bash
 # mint one NFT
-ccli call fa2 --entry mint --arg '{"tow": "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb", "tid": 1, "nbt": 1}'
+ccli call tzombies --entry mint --arg '{"tow": "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb", "tid": 1, "nbt": 1}'
 ```
 
 ### Market

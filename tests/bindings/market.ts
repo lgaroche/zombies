@@ -85,7 +85,7 @@ export const order_container_mich_type: att.MichelineType = att.pair_annot_to_mi
     att.prim_annot_to_mich_type("mutez", ["%price"]),
     att.prim_annot_to_mich_type("timestamp", ["%expiry"])
 ], []), []);
-const sell_arg_to_mich = (fa2_: att.Address, token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, expiry_: Date): att.Micheline => {
+const list_token_arg_to_mich = (fa2_: att.Address, token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, expiry_: Date): att.Micheline => {
     return att.pair_to_mich([
         fa2_.to_mich(),
         token_id_.to_mich(),
@@ -94,7 +94,7 @@ const sell_arg_to_mich = (fa2_: att.Address, token_id_: att.Nat, amount_: att.Na
         att.date_to_mich(expiry_)
     ]);
 }
-const cancel_arg_to_mich = (order_id: att.Nat): att.Micheline => {
+const remove_listing_arg_to_mich = (order_id: att.Nat): att.Micheline => {
     return order_id.to_mich();
 }
 const buy_arg_to_mich = (order_id: att.Nat, amount_: att.Nat): att.Micheline => {
@@ -124,15 +124,15 @@ export class Market {
         const address = (await ex.deploy("./contracts/market.arl", {}, params)).address;
         this.address = address;
     }
-    async sell(fa2_: att.Address, token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, expiry_: Date, params: Partial<ex.Parameters>): Promise<att.CallResult> {
+    async list_token(fa2_: att.Address, token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, expiry_: Date, params: Partial<ex.Parameters>): Promise<att.CallResult> {
         if (this.address != undefined) {
-            return await ex.call(this.address, "sell", sell_arg_to_mich(fa2_, token_id_, amount_, price_, expiry_), params);
+            return await ex.call(this.address, "list_token", list_token_arg_to_mich(fa2_, token_id_, amount_, price_, expiry_), params);
         }
         throw new Error("Contract not initialised");
     }
-    async cancel(order_id: att.Nat, params: Partial<ex.Parameters>): Promise<att.CallResult> {
+    async remove_listing(order_id: att.Nat, params: Partial<ex.Parameters>): Promise<att.CallResult> {
         if (this.address != undefined) {
-            return await ex.call(this.address, "cancel", cancel_arg_to_mich(order_id), params);
+            return await ex.call(this.address, "remove_listing", remove_listing_arg_to_mich(order_id), params);
         }
         throw new Error("Contract not initialised");
     }
@@ -142,15 +142,15 @@ export class Market {
         }
         throw new Error("Contract not initialised");
     }
-    async get_sell_param(fa2_: att.Address, token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, expiry_: Date, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+    async get_list_token_param(fa2_: att.Address, token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, expiry_: Date, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
         if (this.address != undefined) {
-            return await ex.get_call_param(this.address, "sell", sell_arg_to_mich(fa2_, token_id_, amount_, price_, expiry_), params);
+            return await ex.get_call_param(this.address, "list_token", list_token_arg_to_mich(fa2_, token_id_, amount_, price_, expiry_), params);
         }
         throw new Error("Contract not initialised");
     }
-    async get_cancel_param(order_id: att.Nat, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+    async get_remove_listing_param(order_id: att.Nat, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
         if (this.address != undefined) {
-            return await ex.get_call_param(this.address, "cancel", cancel_arg_to_mich(order_id), params);
+            return await ex.get_call_param(this.address, "remove_listing", remove_listing_arg_to_mich(order_id), params);
         }
         throw new Error("Contract not initialised");
     }
@@ -199,10 +199,10 @@ export class Market {
         r_value: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_value\"")]),
         r_order: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_order\"")]),
         r_buy_amount: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_buy_amount\"")]),
-        r_owner: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_owner\"")]),
-        r_cancel_order: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_cancel_order\"")]),
-        r_expiry: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_expiry\"")]),
-        r_sell_amount: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_sell_amount\"")])
+        r_owner: att.string_to_mich("\"Only the owner can remove the listing\""),
+        r_order_remove: att.string_to_mich("\"Order not found\""),
+        r_expiry: att.string_to_mich("\"Expiry must be in the future\""),
+        r_sell_amount: att.string_to_mich("\"Amount cannot be zero\"")
     };
 }
 export const market = new Market();

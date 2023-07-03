@@ -9,7 +9,7 @@
     "lint": "next lint",
     "bindings": "npx completium-cli generate binding-dapp-ts fa2.arl --input-path ./contracts --output-path ./contracts/bindings",
     "bindings-test": "npx completium-cli generate binding-ts fa2.arl --input-path ./contracts --output-path ./tests/bindings",
-    "test": "npx ts-mocha tests/deployAndRegister.ts --timeout 0 --bail"
+    "test": "npx ts-mocha tests/deployAndTest.ts --timeout 0 --bail"
   },
   "dependencies": {
     "@completium/dapp-ts": "0.1.11",
@@ -38,7 +38,6 @@
   "devDependencies": {
     "@completium/completium-cli": "0.4.77",
     "@completium/experiment-ts": "0.1.13",
-    "@types/expect": "24.3.0",
     "@types/luxon": "3.3.0",
     "@types/mocha": "9.1.1",
     "@types/node": "20.2.3",
