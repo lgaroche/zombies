@@ -83,9 +83,9 @@ const Drops = () => {
       </Snackbar>
       <Typography variant="h4">Drops</Typography>
       <TokenList
-        tokens={[...tokenInfo?.keys()] ?? []}
+        tokens={[...(tokenInfo?.keys() ?? [])]}
         actions={ClaimButton}
-        onClick={(id) => handleClaim(id)}
+        onClick={handleClaim}
         extra={Extra}
       />
     </>

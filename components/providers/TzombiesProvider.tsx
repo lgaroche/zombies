@@ -51,9 +51,7 @@ const TzombiesProvider = ({ children }: { children: React.ReactNode }) => {
   >(new Map())
   const [inventory, setInventory] = useState<UserInventory>(new Map())
 
-  const fetchFa2Balance = useCallback<
-    (address: Address) => Promise<UserInventory>
-  >(
+  const fetchFa2Balance = useCallback(
     async (address: Address) => {
       if (!fa2 || registeredTokenInfo.size < 1) {
         return new Map()
