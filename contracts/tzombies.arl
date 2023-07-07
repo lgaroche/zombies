@@ -78,7 +78,7 @@ entry set_token_metadata (tid : nat, tdata: map<string, bytes>) {
   called by owner
   require { tmd_r1: is_not_paused() }
   effect {
-    token_metadata.add_update(tid, { token_id = tid; token_info = tdata });
+    token_metadata.add({ ftoken_metadata = tid; token_id = tid; token_info = tdata });
   }
 }
 
