@@ -12,8 +12,8 @@ The app is deployed on [https://zombies-pi.vercel.app/](https://zombies-pi.verce
 alias ccli="npx completium-cli"
 ccli init
 ccli start sandbox
-ccli switch endpoint http://localhost:20000
-ccli switch account alice
+ccli set endpoint http://localhost:20000
+ccli set account alice
 ```
 
 ### Generate bindings
@@ -50,8 +50,8 @@ ccli call tzombies --entry mint --amount 2tz --arg '{"tow": "tz1VSUr8wwNhLAzempo
 ### Market
 
 ```bash
-# create listing
-ccli call market --entry list_for_sale --arg '{"fa2_": "<replace fa2 address", "token_id_": 1, "amount_": 1, "price_": 100, "expiry_": "2023-09-01 23:00:00"}'
+# list token for sale
+ccli call market --entry list_for_sale --arg '{"fa2_": "<replace fa2 address>", "token_id_": 1, "amount_": 1, "price_": 100, "expiry_": "2025-01-01 23:00:00"}'
 
 # approve marketplace on fa2 contract
 ccli call tzombies --entry update_operators_for_all --arg '{"upl": [{ "kind": "left", "value": "<replace market address>" }]}'
