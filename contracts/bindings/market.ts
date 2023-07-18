@@ -85,7 +85,7 @@ export const order_container_mich_type: att.MichelineType = att.pair_annot_to_mi
     att.prim_annot_to_mich_type("mutez", ["%price"]),
     att.prim_annot_to_mich_type("timestamp", ["%expiry"])
 ], []), []);
-const list_token_arg_to_mich = (fa2_: att.Address, token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, expiry_: Date): att.Micheline => {
+const list_for_sale_arg_to_mich = (fa2_: att.Address, token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, expiry_: Date): att.Micheline => {
     return att.pair_to_mich([
         fa2_.to_mich(),
         token_id_.to_mich(),
@@ -120,9 +120,9 @@ export class Market {
         }
         throw new Error("Contract not initialised");
     }
-    async list_token(fa2_: att.Address, token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, expiry_: Date, params: Partial<ex.Parameters>): Promise<att.CallResult> {
+    async list_for_sale(fa2_: att.Address, token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, expiry_: Date, params: Partial<ex.Parameters>): Promise<att.CallResult> {
         if (this.address != undefined) {
-            return await ex.call(this.address, "list_token", list_token_arg_to_mich(fa2_, token_id_, amount_, price_, expiry_), params);
+            return await ex.call(this.address, "list_for_sale", list_for_sale_arg_to_mich(fa2_, token_id_, amount_, price_, expiry_), params);
         }
         throw new Error("Contract not initialised");
     }
@@ -138,9 +138,9 @@ export class Market {
         }
         throw new Error("Contract not initialised");
     }
-    async get_list_token_param(fa2_: att.Address, token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, expiry_: Date, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+    async get_list_for_sale_param(fa2_: att.Address, token_id_: att.Nat, amount_: att.Nat, price_: att.Tez, expiry_: Date, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
         if (this.address != undefined) {
-            return await ex.get_call_param(this.address, "list_token", list_token_arg_to_mich(fa2_, token_id_, amount_, price_, expiry_), params);
+            return await ex.get_call_param(this.address, "list_for_sale", list_for_sale_arg_to_mich(fa2_, token_id_, amount_, price_, expiry_), params);
         }
         throw new Error("Contract not initialised");
     }

@@ -23,7 +23,7 @@ asset order identified by id to big_map {
 
 variable next_order_id: nat = 1
 
-entry list_token(fa2_: address, token_id_: nat, amount_: nat, price_: tez, expiry_: date) {
+entry list_for_sale(fa2_: address, token_id_: nat, amount_: nat, price_: tez, expiry_: date) {
     require {
         r_sell_amount: amount_ > 0 otherwise "Amount cannot be zero";
         r_expiry: expiry_ > now otherwise "Expiry must be in the future";

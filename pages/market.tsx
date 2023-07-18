@@ -12,7 +12,7 @@ import {
 import React, { useCallback, useState } from "react"
 import { useWalletContext } from "../components/providers/WalletProvider"
 import {
-  Sale,
+  Listing,
   useMarketProviderContext,
 } from "../components/providers/MarketProvider"
 import { DateTime } from "luxon"
@@ -25,17 +25,17 @@ const Market = () => {
   const { account } = useWalletContext()
   const {
     isApproved,
-    sales,
+    listings,
     approve,
     revoke,
-    cancel,
+    remove_listing,
     fetchMarketplaceApproval,
-    fetchSales,
+    fetchListings,
   } = useMarketProviderContext()
   const { tokenInfo } = useTzombiesContext()
   const { ipfsUriToGateway } = useMetadataContext()
 
-  const [buySale, setBuySale] = useState<Sale>()
+  const [buyListing, setBuyListing] = useState<Listing>()
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string>()
 
@@ -69,21 +69,21 @@ const Market = () => {
     setLoading(true)
     try {
       await fetchMarketplaceApproval()
-      await fetchSales()
+      await fetchListings()
     } catch (e: any) {
       console.error(e)
       setError(e.message ?? JSON.stringify(e))
     } finally {
       setLoading(false)
     }
-  }, [fetchMarketplaceApproval, fetchSales])
+  }, [fetchMarketplaceApproval, fetchListings])
 
   const handleCancel = useCallback(
-    async (sale: Sale) => {
+    async (listing: Listing) => {
       setLoading(true)
       try {
-        await cancel(sale)
-        await fetchSales()
+        await remove_listing(listing)
+        await fetchListings()
       } catch (e: any) {
         console.error(e)
         setError(e.message ?? JSON.stringify(e))
@@ -91,7 +91,7 @@ const Market = () => {
         setLoading(false)
       }
     },
-    [cancel, fetchSales]
+    [remove_listing, fetchListings]
   )
 
   return (
@@ -127,10 +127,10 @@ const Market = () => {
 
       <BuyDialog
         onClose={() => {
-          setBuySale(undefined)
+          setBuyListing(undefined)
           handleRefresh()
         }}
-        sale={buySale}
+        listing={buyListing}
       />
 
       <Table size="small">
@@ -147,33 +147,34 @@ const Market = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {sales.map((sale) => (
-            <TableRow key={sale.saleId}>
+          {listings.map((listing) => (
+            <TableRow key={listing.saleId}>
               <TableCell>
                 <Image
                   src={ipfsUriToGateway(
-                    tokenInfo.get(sale.parameters.tokenId)?.thumbnailUri ?? ""
+                    tokenInfo.get(listing.parameters.tokenId)?.thumbnailUri ??
+                      ""
                   )}
-                  alt={tokenInfo.get(sale.parameters.tokenId)?.name ?? ""}
+                  alt={tokenInfo.get(listing.parameters.tokenId)?.name ?? ""}
                   width={50}
                   height={50}
                 />
               </TableCell>
-              <TableCell>{sale.parameters.amount}</TableCell>
-              <TableCell>{sale.parameters.price / 1_000_000} ꜩ</TableCell>
+              <TableCell>{listing.parameters.amount}</TableCell>
+              <TableCell>{listing.parameters.price / 1_000_000} ꜩ</TableCell>
               <TableCell sx={{ display: { xs: "none", sm: "table-cell" } }}>
-                {sale.seller.toString() === account?.address
+                {listing.seller.toString() === account?.address
                   ? "you"
-                  : sale.seller.toString()}
+                  : listing.seller.toString()}
               </TableCell>
               <TableCell>
-                {DateTime.fromJSDate(sale.parameters.expiry).toRelative()}
+                {DateTime.fromJSDate(listing.parameters.expiry).toRelative()}
               </TableCell>
               <TableCell>
-                {sale.seller.toString() !== account?.address ? (
+                {listing.seller.toString() !== account?.address ? (
                   <Button
                     variant="outlined"
-                    onClick={() => setBuySale(sale)}
+                    onClick={() => setBuyListing(listing)}
                     disabled={loading}
                   >
                     Buy
@@ -181,7 +182,7 @@ const Market = () => {
                 ) : (
                   <Button
                     variant="text"
-                    onClick={() => handleCancel(sale)}
+                    onClick={() => handleCancel(listing)}
                     disabled={loading}
                   >
                     Cancel

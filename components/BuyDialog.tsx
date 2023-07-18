@@ -9,16 +9,16 @@ import {
   TextField,
 } from "@mui/material"
 import React, { useCallback, useEffect, useState } from "react"
-import { Sale, useMarketProviderContext } from "./providers/MarketProvider"
+import { Listing, useMarketProviderContext } from "./providers/MarketProvider"
 import { TokenContent } from "./Token"
 import { useTzombiesContext } from "./providers/TzombiesProvider"
 
 interface BuyDialogProps {
-  sale?: Sale
+  listing?: Listing
   onClose: () => void
 }
 
-const BuyDialog = ({ sale, onClose }: BuyDialogProps) => {
+const BuyDialog = ({ listing, onClose }: BuyDialogProps) => {
   const { buy } = useMarketProviderContext()
   const { fetchInventory } = useTzombiesContext()
   const [quantity, setQuantity] = useState<number>(1)
@@ -27,10 +27,10 @@ const BuyDialog = ({ sale, onClose }: BuyDialogProps) => {
   const [error, setError] = useState<string>()
 
   const handleBuy = useCallback(async () => {
-    if (!sale) return
+    if (!listing) return
     setLoading(true)
     try {
-      const res = await buy(sale, quantity)
+      const res = await buy(listing, quantity)
       if (res) {
         setTxId(res.operation_hash)
         fetchInventory()
@@ -42,13 +42,13 @@ const BuyDialog = ({ sale, onClose }: BuyDialogProps) => {
     } finally {
       setLoading(false)
     }
-  }, [sale, buy, onClose, fetchInventory, quantity])
+  }, [listing, buy, onClose, fetchInventory, quantity])
 
   useEffect(() => {
-    if (sale) {
-      setQuantity(sale.parameters.amount)
+    if (listing) {
+      setQuantity(listing.parameters.amount)
     }
-  }, [sale])
+  }, [listing])
 
   return (
     <>
@@ -59,11 +59,11 @@ const BuyDialog = ({ sale, onClose }: BuyDialogProps) => {
         <Alert severity={"error"}>Error: {error}</Alert>
       </Snackbar>
 
-      {sale && (
-        <Dialog open={!!sale} onClose={onClose}>
+      {listing && (
+        <Dialog open={!!listing} onClose={onClose}>
           <DialogTitle>Buy a Zombie</DialogTitle>
           <DialogContent>
-            <TokenContent id={sale.parameters.tokenId} />
+            <TokenContent id={listing.parameters.tokenId} />
             <TextField
               label="Quantity"
               type="number"
@@ -71,7 +71,7 @@ const BuyDialog = ({ sale, onClose }: BuyDialogProps) => {
               value={quantity}
               onChange={({ target }) =>
                 setQuantity(
-                  Math.min(parseInt(target.value), sale.parameters.amount)
+                  Math.min(parseInt(target.value), listing.parameters.amount)
                 )
               }
             />
@@ -81,7 +81,9 @@ const BuyDialog = ({ sale, onClose }: BuyDialogProps) => {
             <Button onClick={handleBuy} disabled={loading}>
               {loading
                 ? "In progress..."
-                : `Buy for ${(sale.parameters.price * quantity) / 1_000_000}ꜩ`}
+                : `Buy for ${
+                    (listing.parameters.price * quantity) / 1_000_000
+                  }ꜩ`}
             </Button>
           </DialogActions>
         </Dialog>

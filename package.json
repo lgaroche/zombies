@@ -36,7 +36,7 @@
     "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "@completium/completium-cli": "0.4.77",
+    "@completium/completium-cli": "0.4.86",
     "@completium/experiment-ts": "0.1.13",
     "@types/luxon": "3.3.0",
     "@types/mocha": "9.1.1",

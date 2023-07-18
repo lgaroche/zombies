@@ -9,48 +9,48 @@ import {
   remove_for_all,
 } from "../../contracts/bindings/fa2"
 
-interface SellParameters {
+interface ListingParameters {
   tokenId: number
   amount: number
   price: number
   expiry: Date
 }
 
-interface Sale {
+interface Listing {
   saleId: number
   seller: Address
-  parameters: SellParameters
+  parameters: ListingParameters
 }
 
 interface MarketProviderContextProps {
   market?: Market
   isApproved: boolean
-  sales: Sale[]
+  listings: Listing[]
   approve: () => Promise<void>
   revoke: () => Promise<void>
-  sell: (params: SellParameters) => Promise<CallResult | undefined>
-  cancel: (sale: Sale) => Promise<CallResult | undefined>
-  buy: (sale: Sale, amount: number) => Promise<CallResult | undefined>
+  list_for_sale: (params: ListingParameters) => Promise<CallResult | undefined>
+  remove_listing: (listing: Listing) => Promise<CallResult | undefined>
+  buy: (listing: Listing, amount: number) => Promise<CallResult | undefined>
   fetchMarketplaceApproval: () => Promise<void>
-  fetchSales: () => Promise<void>
+  fetchListings: () => Promise<void>
 }
 
 const MarketProviderContext = React.createContext<MarketProviderContextProps>({
   isApproved: false,
-  sales: [],
+  listings: [],
   approve: async () => {},
   revoke: async () => {},
-  sell: async () => {
+  list_for_sale: async () => {
     throw new Error("MarketProviderContext not initialized")
   },
-  cancel: async () => {
+  remove_listing: async () => {
     throw new Error("MarketProviderContext not initialized")
   },
   buy: async () => {
     throw new Error("MarketProviderContext not initialized")
   },
   fetchMarketplaceApproval: async () => {},
-  fetchSales: async () => {},
+  fetchListings: async () => {},
 })
 
 const useMarketProviderContext = () => React.useContext(MarketProviderContext)
@@ -60,7 +60,7 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
   const { Tezos, account } = useWalletContext()
   const [market, setMarket] = useState<Market>()
   const [isApproved, setIsApproved] = useState<boolean>(false)
-  const [sales, setSales] = useState<Sale[]>([])
+  const [listings, setListings] = useState<Listing[]>([])
 
   useEffect(() => {
     if (!Tezos) {
@@ -82,10 +82,10 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
     setIsApproved(!!approved)
   }, [account, fa2])
 
-  const fetchSales = useCallback(async () => {
+  const fetchListings = useCallback(async () => {
     if (!market || !fa2 || !fa2.address) return
     const nOrders = await market.get_next_order_id()
-    const sales: Sale[] = []
+    const listings: Listing[] = []
     const inventories: Map<Address, UserInventory> = new Map()
     for (let i = 1; i < nOrders.to_number(); i++) {
       const order = await market.get_order_value(new Nat(i))
@@ -104,7 +104,7 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
       const qty = Math.min(order.amount.to_number(), amount ?? 0)
       if (qty < 1) continue
 
-      sales.push({
+      listings.push({
         saleId: i,
         seller: order.seller,
         parameters: {
@@ -115,12 +115,12 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
         },
       })
     }
-    setSales(sales)
+    setListings(listings)
   }, [fa2, fetchFa2Balance, market])
 
   useEffect(() => {
-    fetchSales()
-  }, [fetchSales])
+    fetchListings()
+  }, [fetchListings])
 
   useEffect(() => {
     fetchMarketplaceApproval()
@@ -138,12 +138,12 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
     await fa2.update_operators_for_all([arg], {})
   }, [fa2, market])
 
-  const sell = useCallback<
-    (params: SellParameters) => Promise<CallResult | undefined>
+  const list_for_sale = useCallback<
+    (params: ListingParameters) => Promise<CallResult | undefined>
   >(
-    async ({ tokenId, amount, price, expiry }: SellParameters) => {
+    async ({ tokenId, amount, price, expiry }: ListingParameters) => {
       if (!market || !fa2 || !fa2.address) return
-      return await market.list_token(
+      return await market.list_for_sale(
         new Address(fa2.address),
         new Nat(tokenId),
         new Nat(amount),
@@ -155,19 +155,19 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
     [market, fa2]
   )
 
-  const cancel = useCallback(
-    async (sale: Sale) => {
+  const remove_listing = useCallback(
+    async (listing: Listing) => {
       if (!market || !fa2 || !fa2.address) return
-      return await market.remove_listing(new Nat(sale.saleId), {})
+      return await market.remove_listing(new Nat(listing.saleId), {})
     },
     [market, fa2]
   )
 
   const buy = useCallback(
-    async (sale: Sale, amount: number) => {
+    async (listing: Listing, amount: number) => {
       if (!market || !fa2 || !fa2.address) return
-      return await market.buy(new Nat(sale.saleId), new Nat(amount), {
-        amount: new Tez(sale.parameters.price * amount, "mutez"),
+      return await market.buy(new Nat(listing.saleId), new Nat(amount), {
+        amount: new Tez(listing.parameters.price * amount, "mutez"),
       })
     },
     [market, fa2]
@@ -177,26 +177,26 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
     () => ({
       market,
       isApproved,
-      sales,
+      listings,
       approve,
       revoke,
-      sell,
-      cancel,
+      list_for_sale,
+      remove_listing,
       buy,
       fetchMarketplaceApproval,
-      fetchSales,
+      fetchListings,
     }),
     [
       market,
       isApproved,
-      sales,
+      listings,
       approve,
       revoke,
-      sell,
-      cancel,
+      list_for_sale,
+      remove_listing,
       buy,
       fetchMarketplaceApproval,
-      fetchSales,
+      fetchListings,
     ]
   )
 
@@ -208,4 +208,4 @@ const MarketProvider = ({ children }: { children: React.ReactNode }) => {
 }
 
 export { MarketProvider, useMarketProviderContext }
-export type { Sale }
+export type { Listing }

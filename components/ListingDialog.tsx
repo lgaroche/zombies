@@ -16,14 +16,14 @@ import { useMarketProviderContext } from "./providers/MarketProvider"
 import { DateTimePicker } from "@mui/x-date-pickers"
 import { DateTime } from "luxon"
 
-interface SaleDialogProps {
+interface ListingDialogProps {
   id: number
   onClose: () => void
 }
 
-const SaleDialog = ({ id, onClose }: SaleDialogProps) => {
-  const { sell } = useMarketProviderContext()
-  const { fetchSales } = useMarketProviderContext()
+const ListingDialog = ({ id, onClose }: ListingDialogProps) => {
+  const { list_for_sale } = useMarketProviderContext()
+  const { fetchListings } = useMarketProviderContext()
   const [amount, setAmount] = useState<number>(1)
   const [price, setPrice] = useState<number>(10)
   const [expiry, setExpiry] = useState<DateTime | null>(null)
@@ -36,7 +36,7 @@ const SaleDialog = ({ id, onClose }: SaleDialogProps) => {
       if (!expiry) return
       setLoading(true)
       try {
-        const res = await sell({
+        const res = await list_for_sale({
           tokenId,
           amount,
           price,
@@ -45,7 +45,7 @@ const SaleDialog = ({ id, onClose }: SaleDialogProps) => {
         if (res) {
           setOpHash(res.operation_hash)
           onClose()
-          fetchSales()
+          fetchListings()
         }
       } catch (e: any) {
         console.error(e)
@@ -54,7 +54,7 @@ const SaleDialog = ({ id, onClose }: SaleDialogProps) => {
         setLoading(false)
       }
     },
-    [expiry, sell, amount, price, onClose, fetchSales]
+    [expiry, list_for_sale, amount, price, onClose, fetchListings]
   )
 
   const expiryValid = expiry && expiry.diffNow().toMillis() > 0
@@ -136,4 +136,4 @@ const SaleDialog = ({ id, onClose }: SaleDialogProps) => {
   )
 }
 
-export default SaleDialog
+export default ListingDialog

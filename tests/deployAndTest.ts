@@ -85,7 +85,7 @@ describe("Mint and trade", async () => {
   })
 
   it("sell zombie", async () => {
-    await market.list_token(
+    await market.list_for_sale(
       fa2.get_address(),
       new Nat(1), // token_id_
       new Nat(1), // amount_
