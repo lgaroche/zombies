@@ -1,8 +1,8 @@
 # Token display
 
-In various places over our application we will need to display one of more NFT. To simplify, we'll use the same but customisable component based on Material-UI Card component.
+In various places over our application we will need to display one or more NFTs. To simplify, we'll use the same but customisable component based on Material-UI Card component.
 
-The imports:&#x20;
+Let's create a `components/Token.tsx` file. It will import the following:&#x20;
 
 ```tsx
 import React from "react"
@@ -85,8 +85,8 @@ const TokenList = ({ tokens, actions, extra }: TokenListProps) => (
       <Grid item key={id}>
         <Token
           id={id}
-          actions={actions && actions(id)}
-          extra={extra && extra(id)}
+          actions={actions?.(id)}
+          extra={extra?.(id)}
         />
       </Grid>
     ))}

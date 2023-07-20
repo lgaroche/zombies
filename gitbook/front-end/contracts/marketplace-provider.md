@@ -1,44 +1,44 @@
 # Marketplace provider
 
-The `MarketProvider` follows the same principles as the `TzombiesProvider`. This page will go over the specifics only for this provider.
+The `MarketProvider` follows the same principles as the `TzombiesProvider`. This page will cover only the specifics for this provider. If you would like to view the full code, it is available on the [repository](https://github.com/lgaroche/zombies/blob/main/components/providers/MarketProvider.tsx).
 
 ## Provider base
 
 The props:&#x20;
 
 ```tsx
-interface SellParameters {
+interface ListingParameters {
   tokenId: number
   amount: number
   price: number
   expiry: Date
 }
 
-interface Sale {
+interface Listing {
   saleId: number
   seller: Address
-  parameters: SellParameters
+  parameters: ListingParameters
 }
 
 interface MarketProviderContextProps {
   market?: Market
   isApproved: boolean
-  sales: Sale[]
+  listings: Listing[]
   approve: () => Promise<void>
   revoke: () => Promise<void>
-  sell: (params: SellParameters) => Promise<CallResult | undefined>
-  cancel: (sale: Sale) => Promise<CallResult | undefined>
-  buy: (sale: Sale, amount: number) => Promise<CallResult | undefined>
+  list_for_sale: (params: ListingParameters) => Promise<CallResult | undefined>
+  remove_listing: (listing: Listing) => Promise<CallResult | undefined>
+  buy: (listing: Listing, amount: number) => Promise<CallResult | undefined>
   fetchMarketplaceApproval: () => Promise<void>
-  fetchSales: () => Promise<void>
+  fetchListings: () => Promise<void>
 }
 ```
 
 * `market` is the marketplace contract instance
 * `isApproved` and sales is the provider's state
 * `approve`, `revoke` control the marketplace operator status for the connected wallet
-* `sell`, `cancel` and `buy` are the contract entry points
-* `fetchMarketplaceApproval` and `fetchSales` update the state
+* `list_for_sale`, remove\_listing and `buy` are the contract entry points
+* `fetchMarketplaceApproval` and fetchListings update the state
 
 As for the FA2 contract provider, we initialize it at load:&#x20;
 
@@ -72,23 +72,22 @@ const fetchMarketplaceApproval = useCallback(async () => {
 
 ## Fetch sales
 
-This one is a bit more tricky. If you remember, the marketplace contract does not (and cannot) check all aspects of valid orders. We need to filter out empty or expired orders.&#x20;
+This one is a bit more tricky. If you [remember](../../smart-contracts/marketplace-contract/), the marketplace contract does not (and cannot) check all aspects of valid orders, as it is loosely coupled with the token contract. We need to filter out empty or expired orders.&#x20;
 
-We have a counter: `next_order_id`, we'll use it to iterate over the orders.&#x20;
+We have a counter: `next_order_id.` We'll use it to iterate over the orders.&#x20;
 
-```tsx
-const fetchSales = useCallback(async () => {
-  if (!market || !fa2 || !fa2.address) return
-  const nOrders = await market.get_next_order_id()
-  const sales: Sale[] = []
-  const inventories: Map<Address, UserInventory> = new Map()
-  for (let i = 1; i < nOrders.to_number(); i++) {
+<pre class="language-tsx"><code class="lang-tsx">const fetchListings = useCallback(async () => {
+<strong>  if (!market || !fa2 || !fa2.address) return
+</strong>  const nOrders = await market.get_next_order_id()
+  const listings: Listing[] = []
+  const inventories: Map&#x3C;Address, UserInventory> = new Map()
+  for (let i = 1; i &#x3C; nOrders.to_number(); i++) {
     const order = await market.get_order_value(new Nat(i))
     if (!order) continue
-
+  
     // filter out expired orders
-    if (new Date(order.expiry) < new Date()) continue
-
+    if (new Date(order.expiry) &#x3C; new Date()) continue
+  
     // check how many tokens the seller still has
     if (!inventories.has(order.seller)) {
       inventories.set(order.seller, await fetchFa2Balance(order.seller))
@@ -97,9 +96,9 @@ const fetchSales = useCallback(async () => {
       .get(order.seller)
       ?.get(order.token_id.to_number())
     const qty = Math.min(order.amount.to_number(), amount ?? 0)
-    if (qty < 1) continue
-
-    sales.push({
+    if (qty &#x3C; 1) continue
+  
+    listings.push({
       saleId: i,
       seller: order.seller,
       parameters: {
@@ -110,9 +109,9 @@ const fetchSales = useCallback(async () => {
       },
     })
   }
-  setSales(sales)
+  setListings(listings)
 }, [fa2, fetchFa2Balance, market])
-```
+</code></pre>
 
 ## Fetch on load
 
@@ -120,8 +119,8 @@ As usual, we fetch the state on component load:&#x20;
 
 ```tsx
 useEffect(() => {
-  fetchSales()
-}, [fetchSales])
+  fetchListings()
+}, [fetchListings])
 
 useEffect(() => {
   fetchMarketplaceApproval()
@@ -132,7 +131,7 @@ useEffect(() => {
 
 Each entrypoint is called using the generated bindings.
 
-### Approve / Revoke
+### approve / revoke
 
 ```tsx
 const approve = useCallback(async () => {
@@ -148,15 +147,15 @@ const revoke = useCallback(async () => {
 }, [fa2, market])
 ```
 
-### Sell / Cancel / Buy
+### list\_for\_sale / remove\_listing / buy
 
 ```tsx
-const sell = useCallback<
-  (params: SellParameters) => Promise<CallResult | undefined>
+const list_for_sale = useCallback<
+  (params: ListingParameters) => Promise<CallResult | undefined>
 >(
-  async ({ tokenId, amount, price, expiry }: SellParameters) => {
+  async ({ tokenId, amount, price, expiry }: ListingParameters) => {
     if (!market || !fa2 || !fa2.address) return
-    return await market.sell(
+    return await market.list_for_sale(
       new Address(fa2.address),
       new Nat(tokenId),
       new Nat(amount),
@@ -168,19 +167,19 @@ const sell = useCallback<
   [market, fa2]
 )
 
-const cancel = useCallback(
-  async (sale: Sale) => {
+const remove_listing = useCallback(
+  async (listing: Listing) => {
     if (!market || !fa2 || !fa2.address) return
-    return await market.cancel(new Nat(sale.saleId), {})
+    return await market.remove_listing(new Nat(listing.saleId), {})
   },
   [market, fa2]
 )
 
 const buy = useCallback(
-  async (sale: Sale, amount: number) => {
+  async (listing: Listing, amount: number) => {
     if (!market || !fa2 || !fa2.address) return
-    return await market.buy(new Nat(sale.saleId), new Nat(amount), {
-      amount: new Tez(sale.parameters.price * amount, "mutez"),
+    return await market.buy(new Nat(listing.saleId), new Nat(amount), {
+      amount: new Tez(listing.parameters.price * amount, 'mutez'),
     })
   },
   [market, fa2]
@@ -191,46 +190,46 @@ const buy = useCallback(
 
 Memoise the value and pass it to the children:&#x20;
 
-```tsx
-const value = useMemo(
-  () => ({
+<pre class="language-tsx"><code class="lang-tsx"><strong>const value = useMemo(
+</strong>  () => ({
     market,
     isApproved,
-    sales,
+    listings,
     approve,
     revoke,
-    sell,
-    cancel,
+    list_for_sale,
+    remove_listing,
     buy,
     fetchMarketplaceApproval,
-    fetchSales,
+    fetchListings,
   }),
   [
     market,
     isApproved,
-    sales,
+    listings,
     approve,
     revoke,
-    sell,
-    cancel,
+    list_for_sale,
+    remove_listing,
     buy,
     fetchMarketplaceApproval,
-    fetchSales,
+    fetchListings,
   ]
 )
 
 return (
-  <MarketProviderContext.Provider value={value}>
+  &#x3C;MarketProviderContext.Provider value={value}>
     {children}
-  </MarketProviderContext.Provider>
+  &#x3C;/MarketProviderContext.Provider>
 )
-```
+</code></pre>
 
 ## Export
 
-Export the component, and incude it in the App hierarchy.
+Export the component.
 
-```tsx
-export { MarketProvider, useMarketProviderContext }
-export type { Sale }
-```
+<pre class="language-tsx"><code class="lang-tsx"><strong>export { MarketProvider, useMarketProviderContext }
+</strong>export type { Listing }
+</code></pre>
+
+Include the provider in the App hierarchy, with access to the wallet and Tzombies contexts.

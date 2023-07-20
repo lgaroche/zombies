@@ -2,7 +2,7 @@
 
 ## ℹ Introduction
 
-* [What is TZombies?](README.md)
+* [The TZombies Tutorial](README.md)
 * [Architecture](introduction/architecture.md)
 
 ## 🛠 Setup
@@ -34,8 +34,12 @@
   * [💳 Buy with credit card](front-end/drops/buy-with-credit-card.md)
 * [Inventory](front-end/inventory/README.md)
   * [Transfer dialog](front-end/inventory/transfer-dialog.md)
-  * [Sell dialog](front-end/inventory/sell-dialog.md)
+  * [Listing dialog](front-end/inventory/listing-dialog.md)
   * [Inventory page](front-end/inventory/inventory-page.md)
 * [Market](front-end/market/README.md)
   * [Buy dialog](front-end/market/buy-dialog.md)
   * [Market page](front-end/market/market-page.md)
+
+## 🎁 Wrap up
+
+* [Conclusion](wrap-up/conclusion.md)

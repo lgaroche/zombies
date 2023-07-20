@@ -4,19 +4,19 @@ description: Page layout and navigation
 
 # Layout
 
-Let's start a basic web application with empty pages.&#x20;
+Let's start a basic web application with empty pages.
 
-Edit `./pages/_app.tsx`
-
-It's 2023, so let's enable automatic dark mode, your eyes will thank you tonight.
+Create a file `./pages/_app.tsx`and start by including these imports:
 
 ```typescript
 import useMediaQuery from "@mui/material/useMediaQuery"
 import { createTheme, ThemeProvider } from "@mui/material/styles"
 import CssBaseline from "@mui/material/CssBaseline"
+import { useMemo } from 'react'
+import type { AppProps } from "next/app"
 ```
 
-Add the base line and dark theme provider to the App:
+It's 2023, so let's enable automatic dark mode, your eyes will thank you tonight. Add the base line and dark theme provider to the App:
 
 ```tsx
 export default function App({ Component, pageProps }: AppProps) {
@@ -35,13 +35,16 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Component {...pageProps} />
+        {/* This is where all our providers will "wrap" the page component, for example: */}
+        {/* <MyProvider> */}
+        <Component {...pageProps} />
+        {/* </MyProvider> *}
     </ThemeProvider>
   )
 }
 ```
 
-Now, clean up the `index.tsx` home page:
+Now, create a `index.tsx` file to the `pages` folder:
 
 ```tsx
 import React from "react"
@@ -58,9 +61,11 @@ const Home = () => {
 export default Home
 ```
 
-To enable navigation, let's add a NavBar. Create a folder `./components` and add a `./components/NavBar.tsx` with the following content:&#x20;
+To view your nascent app, run the `yarn dev` command in the `tzombies` folder. Navigate to locahost:3000 in your browser. You should see something like this:
 
-These will be the required imports:&#x20;
+![](<../.gitbook/assets/Screenshot 2023-07-09 at 7.22.08 PM.png>)
+
+To enable navigation, let's add a NavBar. Create a folder `./components` and add a `./components/NavBar.tsx`. Start the file with the following imports:
 
 ```typescript
 import Button from "@mui/material/Button"
@@ -165,6 +170,29 @@ const NavBar = () => {
 export default NavBar
 ```
 
+Add the NavBar to \_app.tsx with the following imports:
+
+```tsx
+import NavBar from '../components/NavBar'
+/* Container is used to provide some space for the NavBar in this minimal UX design */
+import Container from "@mui/material/Container"
+```
+
+And add the `NavBar` component to the return statement of the `App` function:
+
+```tsx
+return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+        <NavBar />
+        <Container sx={{ mt: 12 }}>
+          <Component {...pageProps} />
+        </Container>
+    </ThemeProvider>
+  )
+```
+
+\
 Check that the page opens and the NavBar works as expected. The Connect Wallet button has no effect yet, and navigating leads to 404 since we haven't created them yet.
 
 Let's create them: add three new pages:

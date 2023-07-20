@@ -10,11 +10,11 @@ The marketplace contract can be deployed without any parameters, as it's token-a
 ccli deploy ./contracts/market.arl
 ```
 
-To create a sale, the `sell` entrypoint is called as follows (replace with the correct values):&#x20;
+To create a sale, the `list_for_sale` entrypoint is called as follows (replace with the correct values):&#x20;
 
 ```
 ccli set account alice
-ccli call market --entry sell --arg '{"fa2_": "KT1CPHS16kLFHFi5AXNhoYjD67nwsEFr6h7o", "token_id_": 1, "amount_": 1, "price_": 1000000, "expiry_": "2023-09-01 23:00:00"}'
+ccli call market --entry list_for_sale --arg '{"fa2_": "<TZOMBIES MARKET ADDRESS>", "token_id_": 1, "amount_": 1, "price_": 1000000, "expiry_": "2033-01-01 00:00:00"}'
 ```
 
 Note that the price argument is expressed in mutez, one million-th of a tez. Hence, 1\_000\_000 utez equals 1 ꜩ.
@@ -30,7 +30,7 @@ Why did it fail? Remember, the marketplace contract is not allowed to transfer A
 
 ```bash
 ccli set account alice
-ccli call tzombies --entry update_operators_for_all --arg '{"upl": [{ "kind": "left", "value": "<replace market address>" }]}'
+ccli call tzombies --entry update_operators_for_all --arg '{"upl": [{ "kind": "left", "value": "<MARKET CONTRACT ADDRESS>" }]}'
 ```
 
 Now, try to buy again, it should work!

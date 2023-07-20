@@ -11,16 +11,23 @@ The archetype-lang developers published some [templates for common or standardis
 We'll use the [`fa2_multi`](https://github.com/completium/archetype-fa2/blob/main/contracts/fa2\_multi.arl) base that we'll adjust according to our needs.
 
 {% hint style="info" %}
-The completium team has made a [comprehensive documentation](https://archetype-lang.org/docs/templates/fa2/) on the FA2 template and the archetype language. I recommend taking some time to read and understand the contract logic before moving on.&#x20;
+The completium team maintains [comprehensive documentation](https://archetype-lang.org/docs/templates/fa2/) on the FA2 template and the archetype language. I recommend taking some time to read and understand the contract logic before moving on.
 {% endhint %}
 
-Create a `contracts` folder in your repository, and download `permits.arl` and `fa2_multi.arl` in there.&#x20;
+Go to the [Archetype FA2 Contract Repo](https://github.com/completium/archetype-fa2/tree/main/contracts).
+
+Create a new contracts folder within the tzombies folder and add a copy of `permits.arl` and `fa2_multi.arl`
 
 The main logic is in `fa2_multi`, whereas the `permits` contract implements special features for the NFT (such as transfer with a permit, that allows the owner to sign a message to allow another account or contract to transfer its NFT). &#x20;
 
 ## Adjustments
 
-We'll do the following changes to the FA2 template
+We will make the following changes to the FA2 template to suit our project:
+
+* Rename the contract
+* Remove token metadata initialisation
+* Remove permits update
+* Customise the mint function
 
 ### Rename the contract
 
@@ -30,11 +37,17 @@ The first line is the contract declaration, we'll rename it to fit our project:
 archetype tzombies(owner : address, permits : address) with metadata ""
 ```
 
-We keep the rest of the line as is, the parameters are the contract initialization parameters, we see here that we can define a contract owner, and the address of the permits contract. These will be set during deployment. `with metadata` is a way to include contract metadata (contract metadata is used to identify the contract on block explorers, not to confuse with token metadata)
+We keep the rest of the declaration defines the parameters required for contract initialization. We can see here that a contract owner, and an address for a permits contract must be given at deployment.
+
+`with metadata` is an optional key for defining contract metadata. Contract metadata is used to identify the contract on block explorers and wallets, (not to be confused with token metadata). Here, we leave it out with `""` but the whole key can be removed. Detailed information on contract metadata can be found in the [TZIP-16 proposal](https://tzip.tezosagora.org/proposal/tzip-16/).
+
+{% hint style="warning" %}
+Completium-cli requires the file name  to match the contract name. Rename `fa2_multi.arl` to `tzombies.arl`
+{% endhint %}
 
 ### Remove token metadata initialisation
 
-The template comes with a default token metadata for token with id 0. Let's remove that. Look for section TOKEN METADATA, remove the constants and the initialized by arguments:
+The template comes with a default token metadata for a token with id 0. Let's remove that. Look for section TOKEN METADATA and remove the constants and the initialized by arguments. It should now look like this:
 
 ```
 /* TOKEN METADATA ------------------------------------------------------------ */
@@ -55,7 +68,7 @@ entry set_token_metadata (tid : nat, tdata: map<string, bytes>) {
   called by owner
   require { tmd_r1: is_not_paused() }
   effect {
-    token_metadata.add({ ftoken_metadata: tid; token_id = tid; token_info = tdata });
+    token_metadata.add({ ftoken_metadata = tid; token_id = tid; token_info = tdata });
   }
 }
 ```
@@ -64,8 +77,6 @@ entry set_token_metadata (tid : nat, tdata: map<string, bytes>) {
 ### Remove permits update
 
 In the default template, the contract owner has the ability to change the permits contract associated. Even though that's a practical solution if the permits contract needs to be updated or fixed, it creates a hazard risk, as the owner could perform a malicious change.&#x20;
-
-This step is optional, just keep in mind this aspect if deploying a real collection.
 
 ```
 // Remove this section: 
@@ -86,7 +97,7 @@ entry set_permits(p : address) {
 We'll customise the `mint` function that comes with the template.&#x20;
 
 1. We'd like to have an "open mint" NFT, where anyone can mint. Also, all mints are free, except for token id 1 that will cost 2 ꜩ. See the [design](../../#design) chapter.
-2. For the sake of the tutorial, we'll refund the cost of the NFT to the caller. This will be especially useful when using Wert, as they will not lose too many testnet coins. In a real life contract, we could forward the sales product to the owner, or keep it on the contract and have a `withdraw` entrypoint callable only by an approved address.
+2. In the `effect` section, we'll transfer the sale product for the payable token to the contract owner.&#x20;
 
 ```
 entry mint (tow : address, tid : nat, nbt : nat) {
@@ -97,7 +108,7 @@ entry mint (tow : address, tid : nat, nbt : nat) {
   effect {
     if tid = 1 then begin
       do_require(transferred = nbt * 2tz, "This token costs 2tz");
-      transfer 2tz to caller; // for the tutorial: refund the buyer immediately
+      transfer transferred to owner;
     end;
 
     ledger.add_update((tow, tid), { lamount += nbt });

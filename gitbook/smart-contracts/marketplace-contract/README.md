@@ -8,8 +8,6 @@ This one will be created from scratch.
 
 {% hint style="info" %}
 The contract shown here is very basic and not optimised. It will be left to the reader to extend its functionalities.&#x20;
-
-Also, there exist open-source marketplace contracts that are already deployed on Tezos and can be freely used, such as the [Rarible protocol](https://rarible.org/).&#x20;
 {% endhint %}
 
 Create a new file `./contracts/market.arl`
@@ -17,7 +15,7 @@ Create a new file `./contracts/market.arl`
 The first line is the name declaration:&#x20;
 
 ```
-archetype zombie_market
+archetype market
 ```
 
 Next, we'll re-define the FA2 transfer parameter types that the contract will need to use to send transfer calls to the FA2 contract. They are very specific to the [FA2 spec](https://tzip.tezosagora.org/proposal/tzip-12/).
@@ -59,19 +57,21 @@ We need to keep track of orders:
 variable next_order_id: nat = 1
 ```
 
-Let's now create a sell entrypoint, that will simply register the sale, the only conditions are that the amount is non-zero and that the expiry date is in the future, even though these conditions would not break the logic if they weren't met.&#x20;
+Let's now create an entrypoint to list a token item for sale. The only conditions are that the amount is non-zero and that the expiry date is in the future. These conditions will prevent some invalid sale orders to be published.
+
+However, the marketplace contract will not validate the amount of tokens owned by the seller. This would require tracking balance updates and add too much complexity to the smart contract. Instead, the orders will be filtered by [the client](../../front-end/market/market-page.md).
 
 {% hint style="info" %}
-Note how we use a simple counter to track the order ids. This will help us to enumerate the orders from the client side, but this is not an optimal solution.&#x20;
+Note how we use a simple counter to track the order ids. This will help us to enumerate the orders from the client side. It means that the client will have to get all order history and filter out expired and filled ones. This may not be optimal.
 
 A more robust solution would be to run an off-chain indexer (or integrate an existing one such as [tzkt](https://api.tzkt.io/)), that will keep track of all the created and expired orders.&#x20;
 {% endhint %}
 
 ```archetype
-entry sell(fa2_: address, token_id_: nat, amount_: nat, price_: tez, expiry_: date) {
+entry list_for_sale(fa2_: address, token_id_: nat, amount_: nat, price_: tez, expiry_: date) {
     require {
-        r_sell_amount: amount_ > 0;
-        r_expiry: expiry_ > now;
+        r_sell_amount: amount_ > 0 otherwise "Amount cannot be zero";
+        r_expiry: expiry_ > now otherwise "Expiry must be in the future";
     }
 
     effect {
@@ -93,10 +93,10 @@ entry sell(fa2_: address, token_id_: nat, amount_: nat, price_: tez, expiry_: da
 The seller should be able to change their mind and cancel the order. Note how we check that only the seller can call this entrypoint.&#x20;
 
 ```archetype
-entry cancel(order_id: nat) {
+entry remove_listing(order_id: nat) {
     require {
-        r_cancel_order: order.contains(order_id);
-        r_owner: order[order_id].seller = caller;
+        r_order_remove: order.contains(order_id) otherwise "Order not found";
+        r_owner: order[order_id].seller = caller otherwise "Only the owner can remove the listing";
     }
     effect {
         order.remove(order_id);
@@ -110,12 +110,14 @@ Now, buyers will call another entrypoint, that will do the following:&#x20;
 2. Check that the order exists and that there are still tokens remaining to be sold: `r_order`
 3. Check that the amount sent with the transaction matches the price: `r_value`
 4. Check that the order didn't expire: `r_expired`
-5. Update the orders big map with the new amount
-6. Call the FA2 contract to transfer the token from the seller to the buyer
-7. Transfer the tez coins from the buyer to the seller
+5. Prepare the records required to call the `%transfer` entrypoint on the contract of the listed token
+6. Update the orders big map with the new amount
+7. Call the FA2 contract to transfer the token from the seller to the buyer
+8. Transfer the tez coins from the buyer to the seller
 
 {% hint style="info" %}
-Important: By default, only the token owner is allowed to transfer their tokens. In this case, the buyer instructs the marketplace to transfer someone else's token. To allow this behavior, the token owner must approve the marketplace contract to transfer their tokens. On Tezos, the marketplace will be called an `operator`
+Important: By default, only the token owner is allowed to transfer their tokens. In this case, the buyer instructs the marketplace to transfer someone else's token. To allow this behavior, the token owner must approve the marketplace contract to transfer their tokens. On Tezos, we call the marketplace an `operator`.\
+Adding the marketplace as an operator will be done in the next section (calling `update_operators_for_all` on the token contract).
 {% endhint %}
 
 ```archetype
@@ -132,23 +134,31 @@ entry buy(order_id: nat, amount_: nat) {
         });
 
         const order_ ?= order[order_id];
-
-        // transfer the tokens
-        const tx: transfer_destination = {
+        
+        // prepare the relevant records for the transfer
+        const this_tx_dest: transfer_destination = {
             to_dest = caller;
             token_id_dest = order_.token_id;
             token_amount_dest = amount_
         };
 
-        transfer 0tz to order_.fa2 call %transfer<list<transfer_param>>([{
-            tp_from = order_.seller; 
-            tp_txs = [tx]
-        }]);
+        const this_tx_param: transfer_param = {
+          tp_from = order_.seller;
+          tp_txs = [this_tx_dest]
+        };
 
-        // transfer the tez
+        /* Call the FA2 contract to transfer the tokens.
+         * This is how we call another contract, there is no value to transfer, so we pass 0tz
+         * Note that `transfer` is a reserved keyword in the archetype langage, but that
+         * `%transfer` is the name for an entrypoint as specified in the fa2 standard.
+         * %transfer takes a list of transfer_param records and executes the corresponding transfers.
+         * In this case, only a single transfer is required, so we pass a list of length 1.
+         */
+        transfer 0tz to order_.fa2 call %transfer<list<transfer_param>>([this_tx_param]);
+
+        // transfer the tez to the seller
         transfer transferred to order_.seller
     }
-}
 ```
 
 And our marketplace contract is now ready 😮‍💨

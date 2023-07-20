@@ -1,12 +1,31 @@
-# Sell dialog
+---
+description: >-
+  This dialog displays a form to input listing parameters when a user wants to
+  sell a token.
+---
 
-Similarly to the transfer dialog, create `./components/SaleDialog.tsx` a component that takes the token id, with a form to input the following:
+# Listing dialog
+
+Similarly to the transfer dialog, create `./components/ListingDialog.tsx` a component that takes the token id, with a form to input the following:
 
 * Price
 * Amount
 * Expiry
 
-We'll use `mui-x date-picker` for the expiry date.
+## Date picker
+
+We'll use `mui-x date-picker` for the expiry date. The date picker component needs a date/time library. I picked `luxon`.&#x20;
+
+Luxon itself uses a localisation provider to display dates and times in the browser locale. In `src/pages/_app.tsx`, add the following imports:&#x20;
+
+```tsx
+import { AdapterLuxon } from "@mui/x-date-pickers/AdapterLuxon"
+import { MetadataProvider } from "../components/providers/MetadataProvider"
+```
+
+Then, wrap your app in a `<LocalizationProvider dateAdapter={AdapterLuxon}>` component. See the final [`_app.tsx`](https://github.com/lgaroche/zombies/blob/main/pages/\_app.tsx).
+
+## Component
 
 The result should be similar to this:&#x20;
 
@@ -28,17 +47,15 @@ import { TokenContent } from "./Token"
 import { useMarketProviderContext } from "./providers/MarketProvider"
 import { DateTimePicker } from "@mui/x-date-pickers"
 import { DateTime } from "luxon"
-import { useTzombiesContext } from "./providers/TzombiesProvider"
 
-interface SaleDialogProps {
+interface ListingDialogProps {
   id: number
   onClose: () => void
 }
 
-const SaleDialog = ({ id, onClose }: SaleDialogProps) => {
-  const { sell } = useMarketProviderContext()
-  const { inventory } = useTzombiesContext()
-  const { fetchSales } = useMarketProviderContext()
+const ListingDialog = ({ id, onClose }: ListingDialogProps) => {
+  const { list_for_sale } = useMarketProviderContext()
+  const { fetchListings } = useMarketProviderContext()
   const [amount, setAmount] = useState<number>(1)
   const [price, setPrice] = useState<number>(10)
   const [expiry, setExpiry] = useState<DateTime | null>(null)
@@ -51,7 +68,7 @@ const SaleDialog = ({ id, onClose }: SaleDialogProps) => {
       if (!expiry) return
       setLoading(true)
       try {
-        const res = await sell({
+        const res = await list_for_sale({
           tokenId,
           amount,
           price,
@@ -60,7 +77,7 @@ const SaleDialog = ({ id, onClose }: SaleDialogProps) => {
         if (res) {
           setOpHash(res.operation_hash)
           onClose()
-          fetchSales()
+          fetchListings()
         }
       } catch (e: any) {
         console.error(e)
@@ -69,7 +86,7 @@ const SaleDialog = ({ id, onClose }: SaleDialogProps) => {
         setLoading(false)
       }
     },
-    [expiry, sell, amount, price, onClose, fetchSales]
+    [expiry, list_for_sale, amount, price, onClose, fetchListings]
   )
 
   const expiryValid = expiry && expiry.diffNow().toMillis() > 0
@@ -151,6 +168,5 @@ const SaleDialog = ({ id, onClose }: SaleDialogProps) => {
   )
 }
 
-export default SaleDialog
-
+export default ListingDialog
 ```

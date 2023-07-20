@@ -4,7 +4,7 @@ description: Completium-cli installation and usage
 
 # Completium
 
-Completium is a set of tools to develop smart contracts on Tezos using the [Archetype language](https://archetype-lang.org/). It comes with a CLI that needs to be initialized:
+Completium is a set of tools to support smart contract development with the [Archetype language](https://archetype-lang.org/). We installed completium in the previous section, but it must be initialised.
 
 {% hint style="info" %}
 Running `npx completium-cli` will run the locally installed completium client interface package. For convenience, the command can be aliased with:
@@ -22,16 +22,20 @@ ccli init
 
 This will create the local configuration and default accounts.&#x20;
 
-With Docker running, you can start a blockchain sandbox using the command:
+### Sandbox
 
-```bash
-ccli start sandbox
-```
+A sandbox is a local simulated blockchain for testing and development purposes.
 
-This will start a `oxheadalpha/flextesa` container with a single node and bootstrapped accounts. If the startup fails, make sure that you have the latest container locally available with:
+Completium-cli uses the `oxheadalpha/flextesa` container with a single node and bootstrapped accounts. With Docker running, ensure you have an up-to-date sandbox container:
 
 ```bash
 docker pull oxheadalpha/flextesa:latest
+```
+
+Start the blockchain sandbox:
+
+```bash
+ccli start sandbox
 ```
 
 ## Useful commands
@@ -55,4 +59,4 @@ Switch account (used for next call):
 ccli switch account
 ```
 
-Other commands will be shown and explained throughout the tutorial
+Other commands will explained throughout the tutorial. You can always refresh your memory with `ccli help`.

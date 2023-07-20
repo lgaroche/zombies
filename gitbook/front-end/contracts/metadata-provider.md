@@ -1,10 +1,14 @@
 # Metadata provider
 
-The smart contract only hold a reference to the token metadata on IPFS. The role of the `MetadataProvider` is to fetch the content from IPFS and translate it to a usable metadata object.&#x20;
+Our smart contract holds a reference to token metadata on IPFS, not the metadata itself. The role of the `MetadataProvider` is to fetch the content from IPFS and translate it to a usable metadata object.
 
-Create `./components/providers/MetadataProvider.tsx`
+Create `./components/providers/MetadataProvider.tsx` and add the following import statement:
 
-Token metadata follow the [tzip-21 specification](https://tzip.tezosagora.org/proposal/tzip-21/). Let's define a simple subset of the properties:&#x20;
+```tsx
+import { createContext, useContext, useCallback } from 'react'
+```
+
+Token metadata should follow the [tzip-21 specification](https://tzip.tezosagora.org/proposal/tzip-21/). Let's define a subset of the standard properties:&#x20;
 
 ```tsx
 interface ZombieMetadata {
@@ -18,7 +22,7 @@ interface ZombieMetadata {
 }
 ```
 
-As for all our providers, define the context props:&#x20;
+We will define a context props interface for every provider. In this case:&#x20;
 
 ```tsx
 interface MetadataProviderContextProps {
@@ -27,12 +31,29 @@ interface MetadataProviderContextProps {
 }
 ```
 
-This is a helper function that we'll reuse a few times, probably there's a better location than this component. It replaces the IPFS URI with a HTTPS gateway, as most browsers still don't support IPFS natively. This is not ideal, since gateways are more centralised.
+Now we will define a helper function that replaces the IPFS URI with a HTTPS gateway, as most browsers still don't support IPFS natively. This isn't ideal because gateways are more centralised.&#x20;
 
 ```tsx
 const ipfsUriToGateway = (ipfsUri: string) =>
   ipfsUri.replace("ipfs://", "https://cloudflare-ipfs.com/ipfs/")
 ```
+
+{% hint style="info" %}
+We will be using [next/image](https://nextjs.org/docs/pages/api-reference/components/image) components. Since Next 13, the image component allows new customisation and optimisations for a smoother user experience. However, they require us to declare external image sources. Add the following object to `next.config.js`
+
+```javascript
+images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "cloudflare-ipfs.com",
+      },
+    ],
+  },
+```
+{% endhint %}
+
+As we will reuse the above function a few times, you might prefer to move it into a utilities file rather than importing it's use from this component (as we do in this tutorial)
 
 Create an empty context:
 
@@ -46,9 +67,11 @@ const MetadataContext = createContext<MetadataProviderContextProps>({
 const useMetadataContext = () => useContext(MetadataContext)
 ```
 
-And now the provider implementation, it simply uses the Fetch API to retrive a JSON from the gateway and return a `ZombieMetadata` object.&#x20;
+And now the provider implementation, it simply uses the Fetch API to retrieve a JSON from the gateway and return a `ZombieMetadata` object.&#x20;
 
-It could be interesting (and safe) here to save a cache of the metadata, as an IPFS URI is immutable.
+{% hint style="info" %}
+It could be interesting here to save a cache of the metadata. It will be safe as well, as an IPFS URI is immutable.
+{% endhint %}
 
 ```tsx
 const MetadataProvider = ({ children }: { children: React.ReactNode }) => {
@@ -71,4 +94,7 @@ const MetadataProvider = ({ children }: { children: React.ReactNode }) => {
 
 export { MetadataProvider, useMetadataContext }
 export type { ZombieMetadata }
+
 ```
+
+Remember to include the Metadata provider in the app hierarchy in `_app.tsx.`

@@ -3,8 +3,8 @@
 The market page displays
 
 * The approval status (is the marketplace contract an approved operator on the connected user's tokens?)
-* A button to approve or revoke the marketplace
-* The list of active sale orders
+* A button to approve or revoke marketplace permissions
+* Active listings of tokens for sale
   * On the ones that have been created by the user, show a `Cancel` button
   * On the others, show a `Buy` button
 

@@ -15,7 +15,7 @@ import SendIcon from "@mui/icons-material/Send"
 import { useWalletContext } from "../components/providers/WalletProvider"
 import { TokenList } from "../components/Token"
 import { useTzombiesContext } from "../components/providers/TzombiesProvider"
-import SaleDialog from "../components/SaleDialog"
+import ListingDialog from "../components/ListingDialog"
 import { useMarketProviderContext } from "../components/providers/MarketProvider"
 import Link from "next/link"
 import TransferDialog from "../components/TransferDialog"
@@ -29,7 +29,7 @@ const Inventory = () => {
   const { inventory, fetchInventory } = useTzombiesContext()
   const { isApproved } = useMarketProviderContext()
 
-  const [saleFormOpen, setSaleFormOpen] = useState<number>()
+  const [listingFormOpen, setListingFormOpen] = useState<number>()
   const [transferFormOpen, setTransferFormOpen] = useState<number>()
   const [error, setError] = useState<string>()
   
@@ -56,7 +56,7 @@ Custom actions:&#x20;
 <strong>  (id: number) => (
 </strong>    &#x3C;>
       &#x3C;Button
-        onClick={() => setSaleFormOpen(id)}
+        onClick={() => setListingFormOpen(id)}
         disabled={!isApproved}
         endIcon={&#x3C;SellOutlinedIcon />}
       >
@@ -67,7 +67,7 @@ Custom actions:&#x20;
       &#x3C;/Button>
     &#x3C;/>
   ),
-  [setSaleFormOpen, isApproved]
+  [setListingFormOpen, isApproved]
 )
 </code></pre>
 
@@ -102,9 +102,9 @@ return (
       <Typography variant="h6">{balance} ꜩ</Typography>
     </Paper>
 
-    <SaleDialog
-      id={saleFormOpen ?? 0}
-      onClose={() => setSaleFormOpen(undefined)}
+    <ListingDialog
+      id={listingFormOpen ?? 0}
+      onClose={() => setListingFormOpen(undefined)}
     />
 
     <TransferDialog
