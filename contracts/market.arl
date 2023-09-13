@@ -1,0 +1,90 @@
+archetype market
+
+record transfer_destination {
+  to_dest           : address;
+  token_id_dest     : nat;
+  token_amount_dest : nat
+} as ((%to_, (token_id, amount)))
+
+record transfer_param {
+  tp_from : address;
+  tp_txs  : list<transfer_destination>;
+} as ((%from_, %txs))
+
+asset order identified by id to big_map {
+    id: nat;
+    fa2: address;
+    seller: address;
+    token_id: nat;
+    amount: nat;
+    price: tez;
+    expiry: date;
+}
+
+variable next_order_id: nat = 1
+
+entry list_for_sale(fa2_: address, token_id_: nat, amount_: nat, price_: tez, expiry_: date) {
+    require {
+        r_sell_amount: amount_ > 0 otherwise "Amount cannot be zero";
+        r_expiry: expiry_ > now otherwise "Expiry must be in the future";
+    }
+
+    effect {
+        order.put({
+            fa2 = fa2_;
+            id = next_order_id;
+            seller = caller;
+            token_id = token_id_;
+            amount = amount_;
+            price = price_;
+            expiry = expiry_
+        });
+        next_order_id += 1;
+    }
+    
+}
+
+entry remove_listing(order_id: nat) {
+    require {
+        r_order_remove: order.contains(order_id) otherwise "Order not found";
+        r_owner: order[order_id].seller = caller otherwise "Only the owner can remove the listing";
+    }
+    effect {
+        order.remove(order_id);
+    }
+}
+
+entry buy(order_id: nat, amount_: nat) {
+    require {
+        r_buy_amount: amount_ > 0;
+        r_order: order.contains(order_id) and order[order_id].amount >= amount_;
+        r_value: transferred = amount_ * order[order_id].price;
+        r_expired: order[order_id].expiry > now;
+    }
+    effect {
+        order.update(order_id, {
+            amount -= amount_
+        });
+
+        const order_ ?= order[order_id];
+
+        // prepare the transfer record
+        const tx: transfer_destination = {
+            to_dest = caller;
+            token_id_dest = order_.token_id;
+            token_amount_dest = amount_
+        };
+
+        /* Call the FA2 contract to transfer the tokens.
+         * This is how we call another contract, there is no value to transfer, so we pass 0tz
+         * Note that `transfer` is a reserved keyword, so we need to use `%transfer` here
+         */
+        transfer 0tz to order_.fa2 call %transfer<list<transfer_param>>([{
+            tp_from = order_.seller; 
+            tp_txs = [tx]
+        }]);
+
+        // transfer the tez to the seller
+        transfer transferred to order_.seller
+    }
+}

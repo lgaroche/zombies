@@ -1,0 +1,26 @@
+{
+  "name": "Brainz",
+  "description": "A tasty brainz",
+  "artifactUri": "ipfs://QmT2NbKvqrXTwZQXcziP3XiTawk63eWknYsGegBAGDKRAJ",
+  "displayUri": "ipfs://QmT2NbKvqrXTwZQXcziP3XiTawk63eWknYsGegBAGDKRAJ",
+  "thumbnailUri": "ipfs://QmT2NbKvqrXTwZQXcziP3XiTawk63eWknYsGegBAGDKRAJ",
+  "symbol": "",
+  "tags": ["tezos", "tutorial"],
+  "creators": [],
+  "formats": [
+    {
+      "uri": "ipfs://QmT2NbKvqrXTwZQXcziP3XiTawk63eWknYsGegBAGDKRAJ",
+      "mimeType": "image/png"
+    }
+  ],
+  "decimals": 0,
+  "isBooleanAmount": false,
+  "shouldPreferSymbol": false,
+  "attributes": [
+    {
+      "name": "Alive",
+      "value": true,
+      "type": "boolean"
+    }
+  ]
+}
